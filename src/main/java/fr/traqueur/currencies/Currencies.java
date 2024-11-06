@@ -8,6 +8,9 @@ public enum Currencies {
 
     BEASTTOKENS("BeastTokens", BeastTokenProvider.class),
     VAULT("Vault", VaultProvider.class),
+    MTOKENS("MySQL-Tokens", MTokenProvider.class),
+    PLAYERPOINTS("PlayerPoints", PlayerPointsProvider.class),
+    OPTECO("OptEco", OptEcoProvider.class)
     ;
 
     private final String name;

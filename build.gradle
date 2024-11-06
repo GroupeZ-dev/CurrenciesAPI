@@ -22,8 +22,11 @@ dependencies {
     compileOnly 'org.spigotmc:spigot-api:1.21.1-R0.1-SNAPSHOT'
 
     compileOnly 'com.github.MilkBowl:VaultAPI:1.7'
+    implementation 'com.github.PlayerNguyen:OptEco:2.1.4b'
 
     compileOnly files('libs/bt-api-3.14.6.jar')
+    compileOnly files('libs/MySQLTokens.jar')
+    compileOnly files('libs/PlayerPoints-3.2.7.jar')
 }
 def targetJavaVersion = 8
 java {
