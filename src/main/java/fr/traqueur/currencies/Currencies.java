@@ -10,7 +10,9 @@ public enum Currencies {
     VAULT("Vault", VaultProvider.class),
     MTOKENS("MySQL-Tokens", MTokenProvider.class),
     PLAYERPOINTS("PlayerPoints", PlayerPointsProvider.class),
-    OPTECO("OptEco", OptEcoProvider.class)
+    OPTECO("OptEco", OptEcoProvider.class),
+    ELEMENTALTOKENS("ElementalTokens", ElementalTokensProvider.class),
+    ELEMENTALGEMS("ElementalGems", ElementalGemsProvider.class)
     ;
 
     private final String name;
