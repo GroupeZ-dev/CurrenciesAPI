@@ -19,6 +19,10 @@ public enum Currencies {
     private final Class<? extends CurrencyProvider> providerClass;
     private CurrencyProvider provider;
 
+    static {
+        Updater.checkUpdates();
+    }
+
     Currencies(String name, Class<? extends CurrencyProvider> providerClass) {
         this.name = name;
         this.providerClass = providerClass;
