@@ -87,15 +87,12 @@ Currencies currency = Currencies.VAULT;
 
 ### Creating a Provider Instance
 
-The `createProvider` method should be used to instantiate the provider for the following currencies: `ZMENUITEMS`, `ZESSENTIALS`, `ITEM`, `ECOBITS`, `COINSENGINE`. You must pass the appropriate parameters that match the expected types for each specific provider class.
+The `createProvider` method should be used to instantiate the provider for the following currencies: `ZMENUITEMS`,`ITEM`,. You must pass the appropriate parameters that match the expected types for each specific provider class.
 
 Here are the parameter types required for each provider:
 
 - **ZMENUITEMS**: `Plugin`, `File`, `String` (The `String` represents the path in the YAML file, and it must end with a `.`)
-- **ZESSENTIALS**: `String` (Represents the name of the economy)
 - **ITEM**: `Plugin`, `ItemStack`
-- **ECOBITS**: `String` (Represents the name of the economy)
-- **COINSENGINE**: `String` (Represents the name of the economy)
 
 To create a provider instance, call the `createProvider` method with the correct parameter types for the specific currency. For example:
 
@@ -103,17 +100,23 @@ To create a provider instance, call the `createProvider` method with the correct
 // For ZMenuItemProvider
 currency.createProvider(plugin, file, path);
 
-// For ZEssentialsProvider
-currency.createProvider(economyName);
-
 // For ItemProvider
 currency.createProvider(plugin, itemStack);
 
-// For EcoBitProvider
-currency.createProvider(currencyName);
+```
 
-// For CoinsEngineProvider
-currency.createProvider(currencyName);
+### Multi-Currency Management
+
+For APIs that support multiple currencies, CurrenciesAPI handles everything seamlessly. Using the standard methods—deposit, withdraw, and getBalance—you can specify the exact currency you want to interact with, allowing flexible and intuitive currency management across different plugins.
+
+```java
+// For item you must register by yourself
+Currencies.ITEM.registerProvider("gold", new ItemStack(Material.GOLD);
+Currencies.ITEM.getBalance(player, "gold");
+
+//For zEssentials (and CoinsEngine and Ecobits) it's automatic
+Currencies.ZESSENTIALS.getBalance(player, "coins");
+
 ```
 
 ### Example Usage
