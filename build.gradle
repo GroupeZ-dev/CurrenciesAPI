@@ -31,6 +31,7 @@ dependencies {
     compileOnly files('libs/GemAPI.jar')
     compileOnly files('libs/zEssentialsAPI.jar')
     compileOnly 'com.github.Maxlego08:zMenu-API:303d4e9178'
+    compileOnly 'com.willfp:EcoBits:1.8.4'
 
 }
 def targetJavaVersion = 8

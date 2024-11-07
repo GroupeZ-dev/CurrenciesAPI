@@ -1,6 +1,7 @@
 package fr.traqueur.currencies;
 
 import fr.traqueur.currencies.providers.BeastTokenProvider;
+import fr.traqueur.currencies.providers.EcoBitProvider;
 import fr.traqueur.currencies.providers.ElementalGemsProvider;
 import fr.traqueur.currencies.providers.ElementalTokensProvider;
 import fr.traqueur.currencies.providers.ItemProvider;
@@ -30,7 +31,8 @@ public enum Currencies {
     ITEM("self", ItemProvider.class),
     LEVEL("self", LevelProvider.class),
     ZESSENTIALS("zEssentials", ZEssentialsProvider.class),
-    ZMENUITEMS("zMenu", ZMenuItemProvider.class);
+    ZMENUITEMS("zMenu", ZMenuItemProvider.class),
+    ECOBITS("EcoBits",EcoBitProvider .class);
 
     static {
         Updater.checkUpdates();
