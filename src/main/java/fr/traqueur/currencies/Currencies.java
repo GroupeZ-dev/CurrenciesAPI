@@ -51,7 +51,7 @@ public enum Currencies {
     /**
      * The currency Item from the plugin itself.
      */
-    ITEM("self", ItemProvider.class),
+    ITEM("self", ItemProvider.class, false),
     /**
      * The currency Level from the plugin itself.
      */
@@ -63,7 +63,7 @@ public enum Currencies {
     /**
      * The currency zEssentials from the plugin zEssentials.
      */
-    ZESSENTIALS("zEssentials", ZEssentialsProvider.class, false),
+    ZESSENTIALS("zEssentials", ZEssentialsProvider.class, true, true),
     /**
      * The currency zMenuItems from the plugin zMenu.
      */
@@ -71,7 +71,7 @@ public enum Currencies {
     /**
      * The currency EcoBits from the plugin EcoBits.
      */
-    ECOBITS("EcoBits", EcoBitProvider.class, false),
+    ECOBITS("EcoBits", EcoBitProvider.class, true, true),
     /**
      * The currency CoinsEngine from the plugin CoinsEngine.
      */
@@ -88,17 +88,23 @@ public enum Currencies {
     private final String name;
     private final Class<? extends CurrencyProvider> providerClass;
     private final boolean autocreate;
+    private final boolean currencySpecific;
     private final Map<String, CurrencyProvider> providers;
 
     Currencies(String name, Class<? extends CurrencyProvider> providerClass) {
-        this(name, providerClass, true);
+        this(name, providerClass, true, false);
     }
 
     Currencies(String name, Class<? extends CurrencyProvider> providerClass, boolean autocreate) {
+        this(name, providerClass, autocreate, false);
+    }
+
+    Currencies(String name, Class<? extends CurrencyProvider> providerClass, boolean autocreate, boolean currencySpecific) {
         this.name = name;
         this.providerClass = providerClass;
         this.autocreate = autocreate;
         this.providers = new HashMap<>();
+        this.currencySpecific = currencySpecific;
     }
 
     /**
@@ -206,7 +212,12 @@ public enum Currencies {
             throw new IllegalStateException("The plugin " + this.name + " is not enable.");
         }
         if(autocreate) {
-            createProvider(currencyName);
+
+            if(currencySpecific) {
+                createProvider(currencyName, currencyName);
+            } else {
+                createProvider(currencyName);
+            }
         } else if(!this.providers.containsKey(currencyName)) {
             String currency = name.equalsIgnoreCase("default") ? "" : " and for the currency " + name;
             throw new IllegalStateException("You must create the provider for the plugin " + this.name + currency + " before using it.");
