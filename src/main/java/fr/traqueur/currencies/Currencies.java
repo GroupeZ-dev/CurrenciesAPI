@@ -112,10 +112,15 @@ public enum Currencies {
      *
      * @param objects The objects to pass to the constructor of the provider.
      */
-    public void createProvider(String name, Object... objects) {
+    public void registerProvider(String name, Object... objects) {
         if(this.providers.containsKey(name)) {
             return;
         }
+        CurrencyProvider provider = this.createProvider(objects);
+        this.providers.put(name, provider);
+    }
+
+    public CurrencyProvider createProvider(Object... objects) {
         CurrencyProvider provider;
         try {
             if (objects.length == 0) {
@@ -127,7 +132,7 @@ public enum Currencies {
         } catch (Exception e) {
             throw new RuntimeException("Cannot create the provider for the plugin " + this.name + ".", e);
         }
-        this.providers.put(name, provider);
+        return provider;
     }
 
     /**
@@ -214,9 +219,9 @@ public enum Currencies {
         if(autocreate) {
 
             if(currencySpecific) {
-                createProvider(currencyName, currencyName);
+                registerProvider(currencyName, currencyName);
             } else {
-                createProvider(currencyName);
+                registerProvider(currencyName);
             }
         } else if(!this.providers.containsKey(currencyName)) {
             String currency = name.equalsIgnoreCase("default") ? "" : " and for the currency " + name;
