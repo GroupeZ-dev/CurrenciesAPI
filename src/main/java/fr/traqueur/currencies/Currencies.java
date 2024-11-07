@@ -75,7 +75,7 @@ public enum Currencies {
     /**
      * The currency CoinsEngine from the plugin CoinsEngine.
      */
-    COINSENGINE("CoinsEngine", CoinsEngineProvider.class),
+    COINSENGINE("CoinsEngine", CoinsEngineProvider.class, true, true),
     /**
      * The currency VotingPlugin from the plugin VotingPlugin.
      */
