@@ -62,15 +62,15 @@ public enum Currencies {
     /**
      * The currency zEssentials from the plugin zEssentials.
      */
-    ZESSENTIALS("zEssentials", ZEssentialsProvider.class),
+    ZESSENTIALS("zEssentials", ZEssentialsProvider.class, false),
     /**
      * The currency zMenuItems from the plugin zMenu.
      */
-    ZMENUITEMS("zMenu", ZMenuItemProvider.class),
+    ZMENUITEMS("zMenu", ZMenuItemProvider.class, false),
     /**
      * The currency EcoBits from the plugin EcoBits.
      */
-    ECOBITS("EcoBits", EcoBitProvider.class),
+    ECOBITS("EcoBits", EcoBitProvider.class, false),
     /**
      * The currency CoinsEngine from the plugin CoinsEngine.
      */
@@ -87,10 +87,18 @@ public enum Currencies {
     private final String name;
     private final Class<? extends CurrencyProvider> providerClass;
     private CurrencyProvider provider;
+    private boolean autocreate;
 
     Currencies(String name, Class<? extends CurrencyProvider> providerClass) {
         this.name = name;
         this.providerClass = providerClass;
+        this.autocreate = true;
+    }
+
+    Currencies(String name, Class<? extends CurrencyProvider> providerClass, boolean autocreate) {
+        this.name = name;
+        this.providerClass = providerClass;
+        this.autocreate = autocreate;
     }
 
     /**
@@ -131,9 +139,13 @@ public enum Currencies {
         }
 
         boolean isDisable = !Bukkit.getPluginManager().isPluginEnabled(this.name);
-        if (!isDisable && this.provider == null) {
+        if (!isDisable && this.provider == null && this.autocreate) {
             createProvider();
         }
+        if(!this.autocreate && this.provider == null) {
+            throw new IllegalStateException("You must create the provider for the plugin " + this.name + " before using it.");
+        }
+
         return isDisable;
     }
 
