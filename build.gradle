@@ -22,7 +22,7 @@ dependencies {
     compileOnly 'org.spigotmc:spigot-api:1.21.1-R0.1-SNAPSHOT'
 
     compileOnly 'com.github.MilkBowl:VaultAPI:1.7'
-    implementation 'com.github.PlayerNguyen:OptEco:2.1.4b'
+    compileOnly 'com.github.PlayerNguyen:OptEco:2.1.4b'
 
     compileOnly files('libs/bt-api-3.14.6.jar')
     compileOnly files('libs/MySQLTokens.jar')
@@ -30,6 +30,8 @@ dependencies {
     compileOnly files('libs/TokenAPI.jar')
     compileOnly files('libs/GemAPI.jar')
     compileOnly files('libs/zEssentialsAPI.jar')
+    compileOnly 'com.github.Maxlego08:zMenu-API:303d4e9178'
+
 }
 def targetJavaVersion = 8
 java {

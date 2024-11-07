@@ -11,7 +11,7 @@ import java.math.BigDecimal;
 
 public class ItemProvider implements CurrencyProvider {
 
-    private final Plugin plugin;
+    protected final Plugin plugin;
     private final ItemStack itemStack;
 
     public ItemProvider(Plugin plugin, ItemStack itemStack) {
@@ -47,7 +47,7 @@ public class ItemProvider implements CurrencyProvider {
         } else return BigDecimal.ZERO;
     }
 
-    private int getAmount(Player player, ItemStack itemStack) {
+    protected int getAmount(Player player, ItemStack itemStack) {
         int items = 0;
         for (int slot = 0; slot != 36; slot++) {
             ItemStack currentItemStack = player.getInventory().getItem(slot);
@@ -57,7 +57,7 @@ public class ItemProvider implements CurrencyProvider {
         return items;
     }
 
-    private void removeItems(Player player, ItemStack itemStack, long value) {
+    protected void removeItems(Player player, ItemStack itemStack, long value) {
         PlayerInventory playerInventory = player.getInventory();
 
         int item = (int) value;
@@ -83,7 +83,7 @@ public class ItemProvider implements CurrencyProvider {
         }
     }
 
-    private void giveItem(Player player, long value, ItemStack itemStack) {
+    protected void giveItem(Player player, long value, ItemStack itemStack) {
         itemStack = itemStack.clone();
         if (value > 64) {
             value -= 64;
