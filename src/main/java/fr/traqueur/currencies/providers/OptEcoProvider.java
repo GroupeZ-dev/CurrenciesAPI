@@ -21,17 +21,17 @@ public class OptEcoProvider implements CurrencyProvider {
     }
 
     @Override
-    public void deposit(OfflinePlayer player, BigDecimal amount) {
-        this.api.addPoints(player.getUniqueId(), amount.doubleValue());
+    public void deposit(OfflinePlayer offlinePlayer, BigDecimal amount) {
+        this.api.addPoints(offlinePlayer.getUniqueId(), amount.doubleValue());
     }
 
     @Override
-    public void withdraw(OfflinePlayer player, BigDecimal amount) {
-        this.api.takePoints(player.getUniqueId(), amount.doubleValue());
+    public void withdraw(OfflinePlayer offlinePlayer, BigDecimal amount) {
+        this.api.takePoints(offlinePlayer.getUniqueId(), amount.doubleValue());
     }
 
     @Override
-    public BigDecimal getBalance(OfflinePlayer player) {
-        return BigDecimal.valueOf(this.api.getPoints(player.getUniqueId()));
+    public BigDecimal getBalance(OfflinePlayer offlinePlayer) {
+        return BigDecimal.valueOf(this.api.getPoints(offlinePlayer.getUniqueId()));
     }
 }

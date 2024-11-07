@@ -14,7 +14,9 @@ public enum Currencies {
     PLAYERPOINTS("PlayerPoints", PlayerPointsProvider.class),
     OPTECO("OptEco", OptEcoProvider.class),
     ELEMENTALTOKENS("ElementalTokens", ElementalTokensProvider.class),
-    ELEMENTALGEMS("ElementalGems", ElementalGemsProvider.class)
+    ELEMENTALGEMS("ElementalGems", ElementalGemsProvider.class),
+    ITEMS("Item", ItemProvider.class),
+    ZESSENTIALS("zEssentials", ZEssentialsProvider.class)
     ;
 
     private final String name;

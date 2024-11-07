@@ -29,6 +29,7 @@ dependencies {
     compileOnly files('libs/PlayerPoints-3.2.7.jar')
     compileOnly files('libs/TokenAPI.jar')
     compileOnly files('libs/GemAPI.jar')
+    compileOnly files('libs/zEssentialsAPI.jar')
 }
 def targetJavaVersion = 8
 java {
