@@ -27,6 +27,9 @@ dependencies {
 
     compileOnly 'com.github.MilkBowl:VaultAPI:1.7'
     compileOnly 'com.github.PlayerNguyen:OptEco:2.1.4b'
+    compileOnly 'com.github.Maxlego08:zMenu-API:303d4e9178'
+    compileOnly 'com.willfp:EcoBits:1.8.4'
+    compileOnly 'com.bencodez:votingplugin:6.17.2'
 
     compileOnly files('libs/bt-api-3.14.6.jar')
     compileOnly files('libs/MySQLTokens.jar')
@@ -36,9 +39,6 @@ dependencies {
     compileOnly files('libs/zEssentialsAPI.jar')
     compileOnly files('libs/CoinsEngine-2.4.0.jar')
     compileOnly files('libs/nightcore-2.7.1.jar')
-    compileOnly 'com.github.Maxlego08:zMenu-API:303d4e9178'
-    compileOnly 'com.willfp:EcoBits:1.8.4'
-    compileOnly 'com.bencodez:votingplugin:6.17.2'
 }
 def targetJavaVersion = 8
 java {

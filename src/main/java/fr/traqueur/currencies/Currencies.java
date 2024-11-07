@@ -107,13 +107,13 @@ public enum Currencies {
                 } catch (InstantiationException | IllegalAccessException e) {
                     e.printStackTrace();
                 }
-            }
-
-            Constructor<?> constructor = this.providerClass.getConstructors()[0];
-            try {
-                this.provider = (CurrencyProvider) constructor.newInstance(objects);
-            } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
-                e.printStackTrace();
+            } else {
+                Constructor<?> constructor = this.providerClass.getConstructors()[0];
+                try {
+                    this.provider = (CurrencyProvider) constructor.newInstance(objects);
+                } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
