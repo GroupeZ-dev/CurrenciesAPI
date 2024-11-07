@@ -8,10 +8,9 @@ import fr.traqueur.currencies.providers.ElementalTokensProvider;
 import fr.traqueur.currencies.providers.ExperienceProvider;
 import fr.traqueur.currencies.providers.ItemProvider;
 import fr.traqueur.currencies.providers.LevelProvider;
-import fr.traqueur.currencies.providers.MTokenProvider;
-import fr.traqueur.currencies.providers.OptEcoProvider;
 import fr.traqueur.currencies.providers.PlayerPointsProvider;
 import fr.traqueur.currencies.providers.VaultProvider;
+import fr.traqueur.currencies.providers.VotingProvider;
 import fr.traqueur.currencies.providers.ZEssentialsProvider;
 import fr.traqueur.currencies.providers.ZMenuItemProvider;
 import org.bukkit.Bukkit;
@@ -25,9 +24,7 @@ public enum Currencies {
 
     BEASTTOKENS("BeastTokens", BeastTokenProvider.class),
     VAULT("Vault", VaultProvider.class),
-    MTOKENS("MySQL-Tokens", MTokenProvider.class),
     PLAYERPOINTS("PlayerPoints", PlayerPointsProvider.class),
-    OPTECO("OptEco", OptEcoProvider.class),
     ELEMENTALTOKENS("ElementalTokens", ElementalTokensProvider.class),
     ELEMENTALGEMS("ElementalGems", ElementalGemsProvider.class),
     ITEM("self", ItemProvider.class),
@@ -36,7 +33,8 @@ public enum Currencies {
     ZESSENTIALS("zEssentials", ZEssentialsProvider.class),
     ZMENUITEMS("zMenu", ZMenuItemProvider.class),
     ECOBITS("EcoBits", EcoBitProvider.class),
-    COINSENGINE("CoinsEngine", CoinsEngineProvider.class);
+    COINSENGINE("CoinsEngine", CoinsEngineProvider.class),
+    VOTINGPLUGIN("VotingPlugin", VotingProvider.class);
 
     static {
         Updater.checkUpdates();
