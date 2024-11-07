@@ -4,6 +4,8 @@ import fr.traqueur.currencies.providers.*;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 
+import java.math.BigDecimal;
+
 public enum Currencies {
 
     BEASTTOKENS("BeastTokens", BeastTokenProvider.class),
@@ -40,21 +42,21 @@ public enum Currencies {
         return isDisable;
     }
 
-    public void deposit(OfflinePlayer player, double amount) {
+    public void deposit(OfflinePlayer player, BigDecimal amount) {
         if(this.isDisable()) {
             throw new IllegalStateException("The plugin " + this.name + " is not enable.");
         }
         this.provider.deposit(player, amount);
     }
 
-    public void withdraw(OfflinePlayer player, double amount) {
+    public void withdraw(OfflinePlayer player, BigDecimal amount) {
         if(this.isDisable()) {
             throw new IllegalStateException("The plugin " + this.name + " is not enable.");
         }
         this.provider.withdraw(player, amount);
     }
 
-    public double getBalance(OfflinePlayer player) {
+    public BigDecimal getBalance(OfflinePlayer player) {
         if(this.isDisable()) {
             throw new IllegalStateException("The plugin " + this.name + " is not enable.");
         }

@@ -6,6 +6,8 @@ import me.playernguyen.opteco.api.OptEcoAPI;
 import me.playernguyen.opteco.api.OptEcoAPIAbstract;
 import org.bukkit.OfflinePlayer;
 
+import java.math.BigDecimal;
+
 public class OptEcoProvider implements CurrencyProvider {
 
     private OptEcoAPI api;
@@ -19,17 +21,17 @@ public class OptEcoProvider implements CurrencyProvider {
     }
 
     @Override
-    public void deposit(OfflinePlayer player, double amount) {
-        this.api.addPoints(player.getUniqueId(), amount);
+    public void deposit(OfflinePlayer player, BigDecimal amount) {
+        this.api.addPoints(player.getUniqueId(), amount.doubleValue());
     }
 
     @Override
-    public void withdraw(OfflinePlayer player, double amount) {
-        this.api.takePoints(player.getUniqueId(), amount);
+    public void withdraw(OfflinePlayer player, BigDecimal amount) {
+        this.api.takePoints(player.getUniqueId(), amount.doubleValue());
     }
 
     @Override
-    public double getBalance(OfflinePlayer player) {
-        return this.api.getPoints(player.getUniqueId());
+    public BigDecimal getBalance(OfflinePlayer player) {
+        return BigDecimal.valueOf(this.api.getPoints(player.getUniqueId()));
     }
 }

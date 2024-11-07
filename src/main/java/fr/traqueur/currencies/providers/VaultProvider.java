@@ -6,6 +6,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.plugin.RegisteredServiceProvider;
 
+import java.math.BigDecimal;
+
 public class VaultProvider implements CurrencyProvider {
 
     private Economy economy;
@@ -24,17 +26,17 @@ public class VaultProvider implements CurrencyProvider {
     }
 
     @Override
-    public void deposit(OfflinePlayer player, double amount) {
-        this.getEconomy().depositPlayer(player, amount);
+    public void deposit(OfflinePlayer player, BigDecimal amount) {
+        this.getEconomy().depositPlayer(player, amount.doubleValue());
     }
 
     @Override
-    public void withdraw(OfflinePlayer player, double amount) {
-        this.getEconomy().withdrawPlayer(player, amount);
+    public void withdraw(OfflinePlayer player, BigDecimal amount) {
+        this.getEconomy().withdrawPlayer(player, amount.doubleValue());
     }
 
     @Override
-    public double getBalance(OfflinePlayer player) {
-        return this.getEconomy().getBalance(player);
+    public BigDecimal getBalance(OfflinePlayer player) {
+        return BigDecimal.valueOf(this.getEconomy().getBalance(player));
     }
 }
