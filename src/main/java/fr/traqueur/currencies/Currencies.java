@@ -17,8 +17,9 @@ import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * The list of all the currencies that can be used in the plugin.
@@ -86,19 +87,18 @@ public enum Currencies {
 
     private final String name;
     private final Class<? extends CurrencyProvider> providerClass;
-    private CurrencyProvider provider;
-    private boolean autocreate;
+    private final boolean autocreate;
+    private final Map<String, CurrencyProvider> providers;
 
     Currencies(String name, Class<? extends CurrencyProvider> providerClass) {
-        this.name = name;
-        this.providerClass = providerClass;
-        this.autocreate = true;
+        this(name, providerClass, true);
     }
 
     Currencies(String name, Class<? extends CurrencyProvider> providerClass, boolean autocreate) {
         this.name = name;
         this.providerClass = providerClass;
         this.autocreate = autocreate;
+        this.providers = new HashMap<>();
     }
 
     /**
@@ -106,24 +106,22 @@ public enum Currencies {
      *
      * @param objects The objects to pass to the constructor of the provider.
      */
-    public void createProvider(Object... objects) {
-        if (this.provider == null) {
-
+    public void createProvider(String name, Object... objects) {
+        if(this.providers.containsKey(name)) {
+            return;
+        }
+        CurrencyProvider provider;
+        try {
             if (objects.length == 0) {
-                try {
-                    this.provider = this.providerClass.newInstance();
-                } catch (InstantiationException | IllegalAccessException e) {
-                    e.printStackTrace();
-                }
+                provider = this.providerClass.newInstance();
             } else {
                 Constructor<?> constructor = this.providerClass.getConstructors()[0];
-                try {
-                    this.provider = (CurrencyProvider) constructor.newInstance(objects);
-                } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
-                    e.printStackTrace();
-                }
+                provider = (CurrencyProvider) constructor.newInstance(objects);
             }
+        } catch (Exception e) {
+            throw new RuntimeException("Cannot create the provider for the plugin " + this.name + ".", e);
         }
+        this.providers.put(name, provider);
     }
 
     /**
@@ -134,19 +132,10 @@ public enum Currencies {
     private boolean isDisable() {
 
         if (this.name.equalsIgnoreCase("self")) {
-            createProvider();
             return false;
         }
 
-        boolean isDisable = !Bukkit.getPluginManager().isPluginEnabled(this.name);
-        if (!isDisable && this.provider == null && this.autocreate) {
-            createProvider();
-        }
-        if(!this.autocreate && this.provider == null) {
-            throw new IllegalStateException("You must create the provider for the plugin " + this.name + " before using it.");
-        }
-
-        return isDisable;
+        return !Bukkit.getPluginManager().isPluginEnabled(this.name);
     }
 
     /**
@@ -156,10 +145,7 @@ public enum Currencies {
      * @param amount The amount of money to add.
      */
     public void deposit(OfflinePlayer player, BigDecimal amount) {
-        if (this.isDisable()) {
-            throw new IllegalStateException("The plugin " + this.name + " is not enable.");
-        }
-        this.provider.deposit(player, amount);
+        this.deposit(player, amount, "default");
     }
 
     /**
@@ -169,10 +155,7 @@ public enum Currencies {
      * @param amount The amount of money to remove.
      */
     public void withdraw(OfflinePlayer player, BigDecimal amount) {
-        if (this.isDisable()) {
-            throw new IllegalStateException("The plugin " + this.name + " is not enable.");
-        }
-        this.provider.withdraw(player, amount);
+        this.withdraw(player, amount, "default");
     }
 
     /**
@@ -182,10 +165,53 @@ public enum Currencies {
      * @return The balance of the player.
      */
     public BigDecimal getBalance(OfflinePlayer player) {
+        return getBalance(player, "default");
+    }
+
+    /**
+     * Add some money to a player.
+     *
+     * @param player The player to add the money.
+     * @param amount The amount of money to add.
+     */
+    public void deposit(OfflinePlayer player, BigDecimal amount, String currencyName) {
+        this.canBeUse(currencyName);
+        this.providers.get(currencyName).deposit(player, amount);
+    }
+
+    /**
+     * Remove some money from a player.
+     *
+     * @param player The player to remove the money.
+     * @param amount The amount of money to remove.
+     */
+    public void withdraw(OfflinePlayer player, BigDecimal amount, String currencyName) {
+        this.canBeUse(currencyName);
+        this.providers.get(currencyName).withdraw(player, amount);
+    }
+
+    /**
+     * Get the balance of a player.
+     *
+     * @param player The player to get the balance.
+     * @return The balance of the player.
+     */
+    public BigDecimal getBalance(OfflinePlayer player, String currencyName) {
+        this.canBeUse(currencyName);
+        return this.providers.get(currencyName).getBalance(player);
+    }
+
+    private void canBeUse(String currencyName) {
         if (this.isDisable()) {
             throw new IllegalStateException("The plugin " + this.name + " is not enable.");
         }
-        return this.provider.getBalance(player);
+        if(autocreate) {
+            createProvider(currencyName);
+        } else if(!this.providers.containsKey(currencyName)) {
+            String currency = name.equalsIgnoreCase("default") ? "" : " and for the currency " + name;
+            throw new IllegalStateException("You must create the provider for the plugin " + this.name + currency + " before using it.");
+        }
     }
+
 
 }
