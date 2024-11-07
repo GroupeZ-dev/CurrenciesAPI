@@ -6,6 +6,7 @@ import fr.maxlego08.menu.loader.MenuItemStackLoader;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 
 import java.io.File;
@@ -48,5 +49,10 @@ public class ZMenuItemProvider extends ItemProvider {
         } else {
             this.plugin.getLogger().severe("Withdraw items from " + offlinePlayer.getName() + " but is offline");
         }
+    }
+
+    @Override
+    public ItemStack getItemStack(Player player) {
+        return this.menuItemStack.build(player);
     }
 }
