@@ -12,32 +12,42 @@ import java.util.Optional;
 
 public class ZEssentialsProvider implements CurrencyProvider {
 
-    private final EconomyManager economyManager;
-    private final Economy economy;
+    private EconomyManager economyManager;
+    private Economy economy;
+    private final String economyName;
 
     public ZEssentialsProvider(String economyName) {
-        EssentialsPlugin essentialsPlugin = (EssentialsPlugin) Bukkit.getPluginManager().getPlugin("zEssentials");
-        this.economyManager = essentialsPlugin.getEconomyManager();
-        Optional<Economy> optional = economyManager.getEconomy(economyName);
-        if (optional.isPresent()) {
-            this.economy = optional.get();
-        } else {
-            throw new NullPointerException("ZEssentials economy " + economyName + " not found");
+        this.economyName = economyName;
+    }
+
+    private void initialize() {
+        if (economyManager == null || economy == null) {
+            EssentialsPlugin essentialsPlugin = (EssentialsPlugin) Bukkit.getPluginManager().getPlugin("zEssentials");
+            this.economyManager = essentialsPlugin.getEconomyManager();
+            Optional<Economy> optional = economyManager.getEconomy(economyName);
+            if (optional.isPresent()) {
+                this.economy = optional.get();
+            } else {
+                throw new NullPointerException("ZEssentials economy " + economyName + " not found");
+            }
         }
     }
 
     @Override
     public void deposit(OfflinePlayer offlinePlayer, BigDecimal amount, String reason) {
+        initialize();
         this.economyManager.deposit(offlinePlayer.getUniqueId(), this.economy, amount, reason);
     }
 
     @Override
     public void withdraw(OfflinePlayer offlinePlayer, BigDecimal amount, String reason) {
+        initialize();
         this.economyManager.withdraw(offlinePlayer.getUniqueId(), this.economy, amount, reason);
     }
 
     @Override
     public BigDecimal getBalance(OfflinePlayer offlinePlayer) {
+        initialize();
         return this.economyManager.getBalance(offlinePlayer, this.economy);
     }
 }
