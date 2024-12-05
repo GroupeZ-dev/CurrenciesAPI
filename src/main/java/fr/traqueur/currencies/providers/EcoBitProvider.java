@@ -10,24 +10,34 @@ import java.math.BigDecimal;
 
 public class EcoBitProvider implements CurrencyProvider {
 
-    private final Currency currency;
+    private Currency currency;
+    private final String currencyName;
 
     public EcoBitProvider(String currencyName) {
-        this.currency = Currencies.getByID(currencyName);
+        this.currencyName = currencyName;
+    }
+
+    private void initialize() {
+        if (currency == null) {
+            this.currency = Currencies.getByID(currencyName);
+        }
     }
 
     @Override
     public void deposit(OfflinePlayer offlinePlayer, BigDecimal amount, String reason) {
+        initialize();
         CurrencyUtils.adjustBalance(offlinePlayer, currency, amount);
     }
 
     @Override
     public void withdraw(OfflinePlayer offlinePlayer, BigDecimal amount, String reason) {
+        initialize();
         CurrencyUtils.adjustBalance(offlinePlayer, currency, amount.negate());
     }
 
     @Override
     public BigDecimal getBalance(OfflinePlayer offlinePlayer) {
+        initialize();
         return CurrencyUtils.getBalance(offlinePlayer, currency);
     }
 }
