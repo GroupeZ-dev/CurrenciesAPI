@@ -87,7 +87,7 @@ public enum Currencies {
 
     private final String name;
     private final Class<? extends CurrencyProvider> providerClass;
-    private final boolean autocreate;
+    private final boolean autoCreate;
     private final boolean currencySpecific;
     private final Map<String, CurrencyProvider> providers;
 
@@ -95,14 +95,14 @@ public enum Currencies {
         this(name, providerClass, true, false);
     }
 
-    Currencies(String name, Class<? extends CurrencyProvider> providerClass, boolean autocreate) {
-        this(name, providerClass, autocreate, false);
+    Currencies(String name, Class<? extends CurrencyProvider> providerClass, boolean autoCreate) {
+        this(name, providerClass, autoCreate, false);
     }
 
-    Currencies(String name, Class<? extends CurrencyProvider> providerClass, boolean autocreate, boolean currencySpecific) {
+    Currencies(String name, Class<? extends CurrencyProvider> providerClass, boolean autoCreate, boolean currencySpecific) {
         this.name = name;
         this.providerClass = providerClass;
-        this.autocreate = autocreate;
+        this.autoCreate = autoCreate;
         this.providers = new HashMap<>();
         this.currencySpecific = currencySpecific;
     }
@@ -113,7 +113,7 @@ public enum Currencies {
      * @param objects The objects to pass to the constructor of the provider.
      */
     public void registerProvider(String name, Object... objects) {
-        if(this.providers.containsKey(name)) {
+        if (this.providers.containsKey(name)) {
             return;
         }
         CurrencyProvider provider = this.createProvider(objects);
@@ -154,9 +154,31 @@ public enum Currencies {
      *
      * @param player The player to add the money.
      * @param amount The amount of money to add.
+     * @param reason The reason of the deposit.
+     */
+    public void deposit(OfflinePlayer player, BigDecimal amount, String reason) {
+        this.deposit(player, amount, "default", reason);
+    }
+
+    /**
+     * Remove some money from a player.
+     *
+     * @param player The player to remove the money.
+     * @param amount The amount of money to remove.
+     * @param reason The reason of the withdrawal.
+     */
+    public void withdraw(OfflinePlayer player, BigDecimal amount, String reason) {
+        this.withdraw(player, amount, "default", reason);
+    }
+
+    /**
+     * Add some money to a player.
+     *
+     * @param player The player to add the money.
+     * @param amount The amount of money to add.
      */
     public void deposit(OfflinePlayer player, BigDecimal amount) {
-        this.deposit(player, amount, "default");
+        this.deposit(player, amount, "default", "No reason");
     }
 
     /**
@@ -166,7 +188,7 @@ public enum Currencies {
      * @param amount The amount of money to remove.
      */
     public void withdraw(OfflinePlayer player, BigDecimal amount) {
-        this.withdraw(player, amount, "default");
+        this.withdraw(player, amount, "default", "No reason");
     }
 
     /**
@@ -184,10 +206,11 @@ public enum Currencies {
      *
      * @param player The player to add the money.
      * @param amount The amount of money to add.
+     * @param reason The reason of the deposit.
      */
-    public void deposit(OfflinePlayer player, BigDecimal amount, String currencyName) {
+    public void deposit(OfflinePlayer player, BigDecimal amount, String currencyName, String reason) {
         this.canBeUse(currencyName);
-        this.providers.get(currencyName).deposit(player, amount, );
+        this.providers.get(currencyName).deposit(player, amount, reason);
     }
 
     /**
@@ -195,10 +218,11 @@ public enum Currencies {
      *
      * @param player The player to remove the money.
      * @param amount The amount of money to remove.
+     * @param reason The reason of the withdrawal.
      */
-    public void withdraw(OfflinePlayer player, BigDecimal amount, String currencyName) {
+    public void withdraw(OfflinePlayer player, BigDecimal amount, String currencyName, String reason) {
         this.canBeUse(currencyName);
-        this.providers.get(currencyName).withdraw(player, amount, );
+        this.providers.get(currencyName).withdraw(player, amount, reason);
     }
 
     /**
@@ -216,18 +240,16 @@ public enum Currencies {
         if (this.isDisable()) {
             throw new IllegalStateException("The plugin " + this.name + " is not enable.");
         }
-        if(autocreate) {
+        if (autoCreate) {
 
-            if(currencySpecific) {
+            if (currencySpecific) {
                 registerProvider(currencyName, currencyName);
             } else {
                 registerProvider(currencyName);
             }
-        } else if(!this.providers.containsKey(currencyName)) {
+        } else if (!this.providers.containsKey(currencyName)) {
             String currency = name.equalsIgnoreCase("default") ? "" : " and for the currency " + name;
             throw new IllegalStateException("You must create the provider for the plugin " + this.name + currency + " before using it.");
         }
     }
-
-
 }
