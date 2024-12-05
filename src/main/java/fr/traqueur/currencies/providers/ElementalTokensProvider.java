@@ -8,12 +8,12 @@ import java.math.BigDecimal;
 
 public class ElementalTokensProvider implements CurrencyProvider {
     @Override
-    public void deposit(OfflinePlayer offlinePlayer, BigDecimal amount) {
+    public void deposit(OfflinePlayer offlinePlayer, BigDecimal amount, String reason) {
         TokenAPI.addTokens(offlinePlayer.getUniqueId(), amount.longValue());
     }
 
     @Override
-    public void withdraw(OfflinePlayer offlinePlayer, BigDecimal amount) {
+    public void withdraw(OfflinePlayer offlinePlayer, BigDecimal amount, String reason) {
         TokenAPI.removeTokens(offlinePlayer.getUniqueId(), amount.longValue());
     }
 

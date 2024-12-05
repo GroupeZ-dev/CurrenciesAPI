@@ -9,7 +9,7 @@ import java.math.BigDecimal;
 public class ExperienceProvider implements CurrencyProvider {
 
     @Override
-    public void deposit(OfflinePlayer offlinePlayer, BigDecimal amount) {
+    public void deposit(OfflinePlayer offlinePlayer, BigDecimal amount, String reason) {
         if (offlinePlayer.isOnline()) {
             Player player = offlinePlayer.getPlayer();
             BigDecimal totalExperience = BigDecimal.valueOf(getTotalExperience(player));
@@ -18,7 +18,7 @@ public class ExperienceProvider implements CurrencyProvider {
     }
 
     @Override
-    public void withdraw(OfflinePlayer offlinePlayer, BigDecimal amount) {
+    public void withdraw(OfflinePlayer offlinePlayer, BigDecimal amount, String reason) {
         if (offlinePlayer.isOnline()) {
             Player player = offlinePlayer.getPlayer();
             BigDecimal totalExperience = BigDecimal.valueOf(getTotalExperience(player));

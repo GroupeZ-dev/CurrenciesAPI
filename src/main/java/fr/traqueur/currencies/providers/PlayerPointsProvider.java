@@ -22,12 +22,12 @@ public class PlayerPointsProvider implements CurrencyProvider {
     }
 
     @Override
-    public void deposit(OfflinePlayer offlinePlayer, BigDecimal amount) {
+    public void deposit(OfflinePlayer offlinePlayer, BigDecimal amount, String reason) {
         this.getAPI().give(offlinePlayer.getUniqueId(), amount.intValue());
     }
 
     @Override
-    public void withdraw(OfflinePlayer offlinePlayer, BigDecimal amount) {
+    public void withdraw(OfflinePlayer offlinePlayer, BigDecimal amount, String reason) {
         this.getAPI().take(offlinePlayer.getUniqueId(), amount.intValue());
     }
 

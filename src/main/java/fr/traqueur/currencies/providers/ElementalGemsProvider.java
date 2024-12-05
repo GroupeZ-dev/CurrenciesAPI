@@ -8,12 +8,12 @@ import java.math.BigDecimal;
 
 public class ElementalGemsProvider implements CurrencyProvider {
     @Override
-    public void deposit(OfflinePlayer offlinePlayer, BigDecimal amount) {
+    public void deposit(OfflinePlayer offlinePlayer, BigDecimal amount, String reason) {
         GemAPI.addGems(offlinePlayer.getUniqueId(), amount.doubleValue());
     }
 
     @Override
-    public void withdraw(OfflinePlayer offlinePlayer, BigDecimal amount) {
+    public void withdraw(OfflinePlayer offlinePlayer, BigDecimal amount, String reason) {
         GemAPI.removeGems(offlinePlayer.getUniqueId(), amount.doubleValue());
     }
 

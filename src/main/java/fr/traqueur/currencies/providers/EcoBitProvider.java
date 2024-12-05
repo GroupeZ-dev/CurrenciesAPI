@@ -17,12 +17,12 @@ public class EcoBitProvider implements CurrencyProvider {
     }
 
     @Override
-    public void deposit(OfflinePlayer offlinePlayer, BigDecimal amount) {
+    public void deposit(OfflinePlayer offlinePlayer, BigDecimal amount, String reason) {
         CurrencyUtils.adjustBalance(offlinePlayer, currency, amount);
     }
 
     @Override
-    public void withdraw(OfflinePlayer offlinePlayer, BigDecimal amount) {
+    public void withdraw(OfflinePlayer offlinePlayer, BigDecimal amount, String reason) {
         CurrencyUtils.adjustBalance(offlinePlayer, currency, amount.negate());
     }
 

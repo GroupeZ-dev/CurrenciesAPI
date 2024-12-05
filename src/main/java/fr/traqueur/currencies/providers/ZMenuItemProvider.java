@@ -32,7 +32,7 @@ public class ZMenuItemProvider extends ItemProvider {
     }
 
     @Override
-    public void deposit(OfflinePlayer offlinePlayer, BigDecimal amount) {
+    public void deposit(OfflinePlayer offlinePlayer, BigDecimal amount, String reason) {
         if (offlinePlayer.isOnline()) {
             Player player = offlinePlayer.getPlayer();
             removeItems(player, this.menuItemStack.build(player), amount.intValue());
@@ -42,7 +42,7 @@ public class ZMenuItemProvider extends ItemProvider {
     }
 
     @Override
-    public void withdraw(OfflinePlayer offlinePlayer, BigDecimal amount) {
+    public void withdraw(OfflinePlayer offlinePlayer, BigDecimal amount, String reason) {
         if (offlinePlayer.isOnline()) {
             Player player = offlinePlayer.getPlayer();
             giveItem(player, amount.intValue(), this.menuItemStack.build(player));

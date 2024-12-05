@@ -8,7 +8,7 @@ import java.math.BigDecimal;
 
 public class BeastTokenProvider implements CurrencyProvider {
     @Override
-    public void deposit(OfflinePlayer offlinePlayer, BigDecimal amount) {
+    public void deposit(OfflinePlayer offlinePlayer, BigDecimal amount, String reason) {
         if (offlinePlayer.isOnline()) {
             BeastTokensAPI.getTokensManager().addTokens(offlinePlayer.getPlayer(), amount.doubleValue());
         } else {
@@ -17,7 +17,7 @@ public class BeastTokenProvider implements CurrencyProvider {
     }
 
     @Override
-    public void withdraw(OfflinePlayer offlinePlayer, BigDecimal amount) {
+    public void withdraw(OfflinePlayer offlinePlayer, BigDecimal amount, String reason) {
         if (offlinePlayer.isOnline()) {
             BeastTokensAPI.getTokensManager().removeTokens(offlinePlayer.getPlayer(), amount.doubleValue());
         } else {

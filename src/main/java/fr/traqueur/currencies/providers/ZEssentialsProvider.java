@@ -27,13 +27,13 @@ public class ZEssentialsProvider implements CurrencyProvider {
     }
 
     @Override
-    public void deposit(OfflinePlayer offlinePlayer, BigDecimal amount) {
-        this.economyManager.deposit(offlinePlayer.getUniqueId(), this.economy, amount);
+    public void deposit(OfflinePlayer offlinePlayer, BigDecimal amount, String reason) {
+        this.economyManager.deposit(offlinePlayer.getUniqueId(), this.economy, amount, reason);
     }
 
     @Override
-    public void withdraw(OfflinePlayer offlinePlayer, BigDecimal amount) {
-        this.economyManager.withdraw(offlinePlayer.getUniqueId(), this.economy, amount);
+    public void withdraw(OfflinePlayer offlinePlayer, BigDecimal amount, String reason) {
+        this.economyManager.withdraw(offlinePlayer.getUniqueId(), this.economy, amount, reason);
     }
 
     @Override

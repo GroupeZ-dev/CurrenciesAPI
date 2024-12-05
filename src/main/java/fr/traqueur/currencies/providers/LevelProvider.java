@@ -8,7 +8,7 @@ import java.math.BigDecimal;
 public class LevelProvider implements CurrencyProvider {
 
     @Override
-    public void deposit(OfflinePlayer offlinePlayer, BigDecimal amount) {
+    public void deposit(OfflinePlayer offlinePlayer, BigDecimal amount, String reason) {
         if (offlinePlayer.isOnline()) {
             int level = offlinePlayer.getPlayer().getLevel();
             offlinePlayer.getPlayer().setLevel(level + amount.intValue());
@@ -16,7 +16,7 @@ public class LevelProvider implements CurrencyProvider {
     }
 
     @Override
-    public void withdraw(OfflinePlayer offlinePlayer, BigDecimal amount) {
+    public void withdraw(OfflinePlayer offlinePlayer, BigDecimal amount, String reason) {
         if (offlinePlayer.isOnline()) {
             int level = offlinePlayer.getPlayer().getLevel();
             offlinePlayer.getPlayer().setLevel(level - amount.intValue());

@@ -20,7 +20,7 @@ public class ItemProvider implements CurrencyProvider {
     }
 
     @Override
-    public void deposit(OfflinePlayer offlinePlayer, BigDecimal amount) {
+    public void deposit(OfflinePlayer offlinePlayer, BigDecimal amount, String reason) {
         if (offlinePlayer.isOnline()) {
             Player player = offlinePlayer.getPlayer();
             removeItems(player, this.itemStack, amount.intValue());
@@ -30,7 +30,7 @@ public class ItemProvider implements CurrencyProvider {
     }
 
     @Override
-    public void withdraw(OfflinePlayer offlinePlayer, BigDecimal amount) {
+    public void withdraw(OfflinePlayer offlinePlayer, BigDecimal amount, String reason) {
         if (offlinePlayer.isOnline()) {
             Player player = offlinePlayer.getPlayer();
             giveItem(player, amount.intValue(), this.itemStack);

@@ -26,12 +26,12 @@ public class VaultProvider implements CurrencyProvider {
     }
 
     @Override
-    public void deposit(OfflinePlayer offlinePlayer, BigDecimal amount) {
+    public void deposit(OfflinePlayer offlinePlayer, BigDecimal amount, String reason) {
         this.getEconomy().depositPlayer(offlinePlayer, amount.doubleValue());
     }
 
     @Override
-    public void withdraw(OfflinePlayer offlinePlayer, BigDecimal amount) {
+    public void withdraw(OfflinePlayer offlinePlayer, BigDecimal amount, String reason) {
         this.getEconomy().withdrawPlayer(offlinePlayer, amount.doubleValue());
     }
 

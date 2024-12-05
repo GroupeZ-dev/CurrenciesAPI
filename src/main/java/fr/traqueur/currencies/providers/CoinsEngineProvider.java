@@ -16,12 +16,12 @@ public class CoinsEngineProvider implements CurrencyProvider {
     }
 
     @Override
-    public void deposit(OfflinePlayer offlinePlayer, BigDecimal amount) {
+    public void deposit(OfflinePlayer offlinePlayer, BigDecimal amount, String reason) {
         CoinsEngineAPI.addBalance(offlinePlayer.getUniqueId(), this.currency, amount.doubleValue());
     }
 
     @Override
-    public void withdraw(OfflinePlayer offlinePlayer, BigDecimal amount) {
+    public void withdraw(OfflinePlayer offlinePlayer, BigDecimal amount, String reason) {
         CoinsEngineAPI.removeBalance(offlinePlayer.getUniqueId(), this.currency, amount.doubleValue());
     }
 

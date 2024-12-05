@@ -12,12 +12,12 @@ public class VotingProvider implements CurrencyProvider {
     private final UserManager userManager = VotingPluginHooks.getInstance().getUserManager();
 
     @Override
-    public void deposit(OfflinePlayer offlinePlayer, BigDecimal amount) {
+    public void deposit(OfflinePlayer offlinePlayer, BigDecimal amount, String reason) {
         this.userManager.getVotingPluginUser(offlinePlayer.getUniqueId()).addPoints(amount.intValue());
     }
 
     @Override
-    public void withdraw(OfflinePlayer offlinePlayer, BigDecimal amount) {
+    public void withdraw(OfflinePlayer offlinePlayer, BigDecimal amount, String reason) {
         this.userManager.getVotingPluginUser(offlinePlayer.getUniqueId()).removePoints(amount.intValue());
     }
 
