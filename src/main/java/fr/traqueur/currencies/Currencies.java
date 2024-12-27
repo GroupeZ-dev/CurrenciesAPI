@@ -9,6 +9,7 @@ import fr.traqueur.currencies.providers.ExperienceProvider;
 import fr.traqueur.currencies.providers.ItemProvider;
 import fr.traqueur.currencies.providers.LevelProvider;
 import fr.traqueur.currencies.providers.PlayerPointsProvider;
+import fr.traqueur.currencies.providers.RedisEconomyProvider;
 import fr.traqueur.currencies.providers.VaultProvider;
 import fr.traqueur.currencies.providers.VotingProvider;
 import fr.traqueur.currencies.providers.ZEssentialsProvider;
@@ -79,7 +80,11 @@ public enum Currencies {
     /**
      * The currency VotingPlugin from the plugin VotingPlugin.
      */
-    VOTINGPLUGIN("VotingPlugin", VotingProvider.class);
+    VOTINGPLUGIN("VotingPlugin", VotingProvider.class),
+    /**
+     * The currency RedisEconomy from the plugin RedisEconomy.
+     */
+    REDISECONOMY("RedisEconomy", RedisEconomyProvider.class);
 
     static {
         Updater.checkUpdates();
