@@ -84,7 +84,7 @@ public enum Currencies {
     /**
      * The currency RedisEconomy from the plugin RedisEconomy.
      */
-    REDISECONOMY("RedisEconomy", RedisEconomyProvider.class);
+    REDISECONOMY("RedisEconomy", RedisEconomyProvider.class, true, true);
 
     static {
         Updater.checkUpdates();
