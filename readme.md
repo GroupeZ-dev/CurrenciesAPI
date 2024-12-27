@@ -21,6 +21,7 @@ The `Currencies` enum allows easy management of various in-game currencies like 
 - [EcoBits](https://www.spigotmc.org/resources/109967/) - `ECOBITS`
 - [CoinsEngine](https://www.spigotmc.org/resources/84121/) - `COINSENGINE`
 - [VotingPlugin](https://www.spigotmc.org/resources/15358/) - `VOTINGPLUGIN`
+- [RedisEconomy](https://www.spigotmc.org/resources/105965/) - `REDISECONOMY`
 
 Each of these providers is implemented through a specific class extending `CurrencyProvider`.
 
@@ -43,7 +44,7 @@ To add the Currencies API to your project using Maven, add the following to your
 <dependency>
     <groupId>com.github.Traqueur-dev</groupId>
     <artifactId>CurrenciesAPI</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.5</version>
 </dependency>
 ```
 
@@ -57,7 +58,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.github.Traqueur-dev:CurrenciesAPI:1.0.0'
+    implementation 'com.github.Traqueur-dev:CurrenciesAPI:1.0.5'
 }
 ```
 
