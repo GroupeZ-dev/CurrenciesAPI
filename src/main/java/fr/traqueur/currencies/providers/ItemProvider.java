@@ -23,7 +23,7 @@ public class ItemProvider implements CurrencyProvider {
     public void deposit(OfflinePlayer offlinePlayer, BigDecimal amount, String reason) {
         if (offlinePlayer.isOnline()) {
             Player player = offlinePlayer.getPlayer();
-            removeItems(player, this.itemStack, amount.intValue());
+            giveItem(player, amount.intValue(), this.itemStack);
         } else{
             this.plugin.getLogger().severe("Deposit items to " + offlinePlayer.getName() + " but is offline");
         }
@@ -33,7 +33,7 @@ public class ItemProvider implements CurrencyProvider {
     public void withdraw(OfflinePlayer offlinePlayer, BigDecimal amount, String reason) {
         if (offlinePlayer.isOnline()) {
             Player player = offlinePlayer.getPlayer();
-            giveItem(player, amount.intValue(), this.itemStack);
+            removeItems(player, this.itemStack, amount.intValue());
         } else {
             this.plugin.getLogger().severe("Withdraw items from " + offlinePlayer.getName() + " but is offline");
         }
