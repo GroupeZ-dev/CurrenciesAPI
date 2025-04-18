@@ -1,19 +1,6 @@
 package fr.traqueur.currencies;
 
-import fr.traqueur.currencies.providers.BeastTokenProvider;
-import fr.traqueur.currencies.providers.CoinsEngineProvider;
-import fr.traqueur.currencies.providers.EcoBitProvider;
-import fr.traqueur.currencies.providers.ElementalGemsProvider;
-import fr.traqueur.currencies.providers.ElementalTokensProvider;
-import fr.traqueur.currencies.providers.ExperienceProvider;
-import fr.traqueur.currencies.providers.ItemProvider;
-import fr.traqueur.currencies.providers.LevelProvider;
-import fr.traqueur.currencies.providers.PlayerPointsProvider;
-import fr.traqueur.currencies.providers.RedisEconomyProvider;
-import fr.traqueur.currencies.providers.VaultProvider;
-import fr.traqueur.currencies.providers.VotingProvider;
-import fr.traqueur.currencies.providers.ZEssentialsProvider;
-import fr.traqueur.currencies.providers.ZMenuItemProvider;
+import fr.traqueur.currencies.providers.*;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 
@@ -84,7 +71,11 @@ public enum Currencies {
     /**
      * The currency RedisEconomy from the plugin RedisEconomy.
      */
-    REDISECONOMY("RedisEconomy", RedisEconomyProvider.class, true, true);
+    REDISECONOMY("RedisEconomy", RedisEconomyProvider.class, true, true),
+    /**
+     * The currency RoyaleEconomy from the plugin RoyaleEconomy.
+     */
+    ROYALEECONOMY("RoyaleEconomy", RoyaleEconomyProvider.class, true, true);
 
     static {
         Updater.checkUpdates();

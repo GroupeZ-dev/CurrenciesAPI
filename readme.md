@@ -22,6 +22,7 @@ The `Currencies` enum allows easy management of various in-game currencies like 
 - [CoinsEngine](https://www.spigotmc.org/resources/84121/) - `COINSENGINE`
 - [VotingPlugin](https://www.spigotmc.org/resources/15358/) - `VOTINGPLUGIN`
 - [RedisEconomy](https://www.spigotmc.org/resources/105965/) - `REDISECONOMY`
+- [RoyaleEconomy](https://polymart.org/product/113/royaleeconomy-1-8-1-21) - `ROYALEECONOMY`
 
 Each of these providers is implemented through a specific class extending `CurrencyProvider`.
 
