@@ -40,6 +40,7 @@ dependencies {
     compileOnly files('libs/zEssentialsAPI-1.0.1.4.jar')
     compileOnly files('libs/CoinsEngine-2.4.2.jar')
     compileOnly files('libs/nightcore-2.7.1.jar')
+    compileOnly files('libs/RoyaleEconomyAPI.jar')
 }
 def targetJavaVersion = 8
 java {
@@ -74,6 +75,7 @@ build.dependsOn generateVersionProperties
 java {
     withSourcesJar()
     withJavadocJar()
+
 }
 
 publishing {
