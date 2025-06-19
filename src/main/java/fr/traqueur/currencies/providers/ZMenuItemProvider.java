@@ -1,8 +1,7 @@
 package fr.traqueur.currencies.providers;
 
-import fr.maxlego08.menu.MenuItemStack;
 import fr.maxlego08.menu.api.InventoryManager;
-import fr.maxlego08.menu.loader.MenuItemStackLoader;
+import fr.maxlego08.menu.api.MenuItemStack;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
@@ -19,8 +18,7 @@ public class ZMenuItemProvider extends ItemProvider {
     public ZMenuItemProvider(Plugin plugin, File file, String path) {
         super(plugin, null);
         InventoryManager inventoryManager = plugin.getServer().getServicesManager().getRegistration(InventoryManager.class).getProvider();
-        MenuItemStackLoader loader = new MenuItemStackLoader(inventoryManager);
-        this.menuItemStack = loader.load(YamlConfiguration.loadConfiguration(file), path, file);
+        this.menuItemStack = inventoryManager.loadItemStack(YamlConfiguration.loadConfiguration(file), path, file);
     }
 
     @Override
