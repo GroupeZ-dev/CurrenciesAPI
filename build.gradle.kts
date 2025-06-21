@@ -10,7 +10,7 @@ rootProject.extra.properties["sha"]?.let { sha ->
     version = sha
 }
 
-group = "fr.traqueur.currencies"
+group = "fr.maxlego08.currencies"
 version = property("version") as String
 
 extra.set("targetFolder", file("target/"))
