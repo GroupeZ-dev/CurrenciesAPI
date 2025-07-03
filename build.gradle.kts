@@ -2,15 +2,16 @@ import java.util.Locale
 
 plugins {
     `java-library`
-    id("com.github.johnrengelman.shadow") version "7.1.2" // Pour remplacer maven-shade-plugin
-    `maven-publish`
+    id("re.alwyn974.groupez.repository") version "1.0.0"
+    id("re.alwyn974.groupez.publish") version "1.0.0"
+    id("com.gradleup.shadow") version "9.0.0-beta11"
 }
 
 rootProject.extra.properties["sha"]?.let { sha ->
     version = sha
 }
 
-group = "fr.maxlego08.currencies"
+group = "fr.traqueur.currencies"
 version = property("version") as String
 
 extra.set("targetFolder", file("target/"))
@@ -42,6 +43,8 @@ dependencies {
     compileOnly("com.bencodez:votingplugin:6.17.2")
     compileOnly("com.github.Emibergo02:RedisEconomy:4.3.19")
 
+    compileOnly("fr.maxlego08.menu:zmenu-api:1.1.0.0")
+
     compileOnly(files("libs/bt-api-3.14.6.jar"))
     compileOnly(files("libs/MySQLTokens.jar"))
     compileOnly(files("libs/PlayerPoints-3.2.7.jar"))
@@ -51,7 +54,6 @@ dependencies {
     compileOnly(files("libs/CoinsEngine-2.4.2.jar"))
     compileOnly(files("libs/nightcore-2.7.1.jar"))
     compileOnly(files("libs/RoyaleEconomyAPI.jar"))
-    compileOnly(files("libs/zMenu-API-1.1.0.0.jar"))
 }
 
 val targetJavaVersion = 8
@@ -98,39 +100,6 @@ tasks.withType<Jar> {
     }
 }
 
-publishing {
-    var repository = System.getProperty("repository.name", "snapshots").replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
-
-    repositories {
-        maven {
-            name = "groupez${repository}"
-            url = uri("https://repo.groupez.dev/${repository.lowercase()}")
-            credentials {
-                username = findProperty("${name}Username") as String? ?: System.getenv("MAVEN_USERNAME")
-                password = findProperty("${name}Password") as String? ?: System.getenv("MAVEN_PASSWORD")
-            }
-            authentication {
-                create<BasicAuthentication>("basic")
-            }
-        }
-    }
-
-    publications {
-        register<MavenPublication>("groupez${repository}") {
-            pom {
-                groupId = project.group as String?
-                artifactId = rootProject.name.lowercase()
-                version = project.version as String?
-
-                scm {
-                    connection = "scm:git:git://github.com/GroupeZ-dev/${rootProject.name}.git"
-                    developerConnection = "scm:git:ssh://github.com/GroupeZ-dev/${rootProject.name}.git"
-                    url = "https://github.com/GroupeZ-dev/${rootProject.name}/"
-                }
-            }
-            artifact(tasks.shadowJar)
-            // artifact(tasks.javadocJar)
-            // artifact(tasks.sourcesJar)
-        }
-    }
+publishConfig {
+    githubOwner = "GroupeZ-dev"
 }
