@@ -1,9 +1,7 @@
-import java.util.Locale
-
 plugins {
     `java-library`
     id("re.alwyn974.groupez.repository") version "1.0.0"
-    id("re.alwyn974.groupez.publish") version "1.0.0"
+    id("re.alwyn974.groupez.publish") version "1.0.1"
     id("com.gradleup.shadow") version "9.0.0-beta11"
 }
 
@@ -102,4 +100,5 @@ tasks.withType<Jar> {
 
 publishConfig {
     githubOwner = "GroupeZ-dev"
+    isRootProject = true
 }
