@@ -33,7 +33,7 @@ public class ZMenuItemProvider extends ItemProvider {
     public void deposit(OfflinePlayer offlinePlayer, BigDecimal amount, String reason) {
         if (offlinePlayer.isOnline()) {
             Player player = offlinePlayer.getPlayer();
-            removeItems(player, this.menuItemStack.build(player), amount.intValue());
+            giveItem(player, amount.intValue(), this.menuItemStack.build(player));
         } else {
             this.plugin.getLogger().severe("Deposit items to " + offlinePlayer.getName() + " but is offline");
         }
@@ -43,7 +43,7 @@ public class ZMenuItemProvider extends ItemProvider {
     public void withdraw(OfflinePlayer offlinePlayer, BigDecimal amount, String reason) {
         if (offlinePlayer.isOnline()) {
             Player player = offlinePlayer.getPlayer();
-            giveItem(player, amount.intValue(), this.menuItemStack.build(player));
+            removeItems(player, this.menuItemStack.build(player), amount.intValue());
         } else {
             this.plugin.getLogger().severe("Withdraw items from " + offlinePlayer.getName() + " but is offline");
         }
