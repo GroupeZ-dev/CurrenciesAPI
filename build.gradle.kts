@@ -5,12 +5,12 @@ plugins {
     id("com.gradleup.shadow") version "9.0.0-beta11"
 }
 
+group = "fr.traqueur.currencies"
+version = property("version") as String
+
 rootProject.extra.properties["sha"]?.let { sha ->
     version = sha
 }
-
-group = "fr.traqueur.currencies"
-version = property("version") as String
 
 extra.set("targetFolder", file("target/"))
 extra.set("classifier", System.getProperty("archive.classifier"))
