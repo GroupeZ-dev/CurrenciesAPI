@@ -1,11 +1,26 @@
 package fr.traqueur.currencies;
 
-import fr.traqueur.currencies.providers.*;
+import fr.traqueur.currencies.providers.BeastTokenProvider;
+import fr.traqueur.currencies.providers.CoinsEngineProvider;
+import fr.traqueur.currencies.providers.EcoBitProvider;
+import fr.traqueur.currencies.providers.ElementalGemsProvider;
+import fr.traqueur.currencies.providers.ElementalTokensProvider;
+import fr.traqueur.currencies.providers.ExperienceProvider;
+import fr.traqueur.currencies.providers.ItemProvider;
+import fr.traqueur.currencies.providers.LevelProvider;
+import fr.traqueur.currencies.providers.PlayerPointsProvider;
+import fr.traqueur.currencies.providers.RedisEconomyProvider;
+import fr.traqueur.currencies.providers.RoyaleEconomyProvider;
+import fr.traqueur.currencies.providers.VaultProvider;
+import fr.traqueur.currencies.providers.VotingProvider;
+import fr.traqueur.currencies.providers.ZEssentialsProvider;
+import fr.traqueur.currencies.providers.ZMenuItemProvider;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 
 import java.lang.reflect.Constructor;
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -122,7 +137,7 @@ public enum Currencies {
             if (objects.length == 0) {
                 provider = this.providerClass.newInstance();
             } else {
-                Constructor<?> constructor = this.providerClass.getConstructors()[0];
+                Constructor<?> constructor = providerClass.getConstructor(Arrays.stream(objects).map(Object::getClass).toArray(Class[]::new));
                 provider = (CurrencyProvider) constructor.newInstance(objects);
             }
         } catch (Exception e) {
