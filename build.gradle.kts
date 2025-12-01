@@ -41,7 +41,7 @@ dependencies {
     compileOnly("com.bencodez:votingplugin:6.17.2")
     compileOnly("com.github.Emibergo02:RedisEconomy:4.3.19")
 
-    compileOnly("fr.maxlego08.menu:zmenu-api:1.1.0.0")
+    compileOnly("fr.maxlego08.menu:zmenu-api:1.1.0.6")
 
     compileOnly(files("libs/bt-api-3.14.6.jar"))
     compileOnly(files("libs/MySQLTokens.jar"))

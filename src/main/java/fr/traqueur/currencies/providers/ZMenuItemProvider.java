@@ -21,6 +21,11 @@ public class ZMenuItemProvider extends ItemProvider {
         this.menuItemStack = inventoryManager.loadItemStack(YamlConfiguration.loadConfiguration(file), path, file);
     }
 
+    public ZMenuItemProvider(Plugin plugin, MenuItemStack menuItemStack) {
+        super(plugin, null);
+        this.menuItemStack = menuItemStack;
+    }
+
     @Override
     public BigDecimal getBalance(OfflinePlayer offlinePlayer) {
         if (offlinePlayer.isOnline()) {
