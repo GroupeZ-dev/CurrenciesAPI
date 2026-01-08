@@ -37,15 +37,16 @@ To add the Currencies API to your project using Maven, add the following to your
 ```xml
 <repositories>
     <repository>
-        <id>jitpack.io</id>
-        <url>https://jitpack.io</url>
+        <id>groupez-releases</id>
+        <name>GroupeZ Repository</name>
+        <url>https://repo.groupez.dev/releases</url>
     </repository>
 </repositories>
 
 <dependency>
-    <groupId>com.github.Traqueur-dev</groupId>
-    <artifactId>CurrenciesAPI</artifactId>
-    <version>1.0.5</version>
+    <groupId>fr.traqueur.currencies</groupId>
+    <artifactId>currenciesapi</artifactId>
+    <version>1.0.11</version>
 </dependency>
 ```
 
@@ -53,13 +54,16 @@ To add the Currencies API to your project using Maven, add the following to your
 
 To add the Currencies API to your project using Gradle, add the following to your `build.gradle`:
 
-```gradle
+```kotlin
 repositories {
-    maven { url 'https://jitpack.io' }
+    maven {
+        name = "groupezReleases"
+        url = uri("https://repo.groupez.dev/releases")
+    }
 }
 
 dependencies {
-    implementation 'com.github.Traqueur-dev:CurrenciesAPI:1.0.5'
+    implementation("fr.traqueur.currencies:currenciesapi:1.0.11")
 }
 ```
 
