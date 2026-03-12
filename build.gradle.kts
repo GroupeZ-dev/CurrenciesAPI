@@ -30,6 +30,14 @@ repositories {
         url = uri("https://nexus.bencodez.com/repository/maven-public/")
         name = "BenCodez Repo"
     }
+    maven {
+        url = uri("https://repo.auxilor.io/repository/maven-public/")
+        name = "Auxilor Repo"
+    }
+    maven {
+        url = uri("https://repo.nightexpressdev.com/releases")
+        name = "night-releases"
+    }
 }
 
 dependencies {
@@ -40,6 +48,7 @@ dependencies {
     compileOnly("com.willfp:EcoBits:1.8.4")
     compileOnly("com.bencodez:votingplugin:6.17.2")
     compileOnly("com.github.Emibergo02:RedisEconomy:4.3.19")
+    compileOnly("su.nightexpress.coinsengine:CoinsEngine:2.7.0")
 
     compileOnly("fr.maxlego08.menu:zmenu-api:1.1.0.6")
 

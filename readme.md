@@ -20,6 +20,7 @@ The `Currencies` enum allows easy management of various in-game currencies like 
 - [zMenu](https://www.spigotmc.org/resources/110402/) - `ZMENUITEMS`
 - [EcoBits](https://www.spigotmc.org/resources/109967/) - `ECOBITS`
 - [CoinsEngine](https://www.spigotmc.org/resources/84121/) - `COINSENGINE`
+- [ExcellentEconomy](https://modrinth.com/plugin/excellenteconomy) - `EXCELLENTEECONOMY`
 - [VotingPlugin](https://www.spigotmc.org/resources/15358/) - `VOTINGPLUGIN`
 - [RedisEconomy](https://www.spigotmc.org/resources/105965/) - `REDISECONOMY`
 - [RoyaleEconomy](https://polymart.org/product/113/royaleeconomy-1-8-1-21) - `ROYALEECONOMY`
