@@ -20,6 +20,7 @@ The `Currencies` enum allows easy management of various in-game currencies like 
 - [zMenu](https://www.spigotmc.org/resources/110402/) - `ZMENUITEMS`
 - [EcoBits](https://www.spigotmc.org/resources/109967/) - `ECOBITS`
 - [CoinsEngine](https://www.spigotmc.org/resources/84121/) - `COINSENGINE`
+- [ExcellentEconomy](https://modrinth.com/plugin/excellenteconomy) - `EXCELLENTEECONOMY`
 - [VotingPlugin](https://www.spigotmc.org/resources/15358/) - `VOTINGPLUGIN`
 - [RedisEconomy](https://www.spigotmc.org/resources/105965/) - `REDISECONOMY`
 - [RoyaleEconomy](https://polymart.org/product/113/royaleeconomy-1-8-1-21) - `ROYALEECONOMY`
@@ -46,7 +47,7 @@ To add the Currencies API to your project using Maven, add the following to your
 <dependency>
     <groupId>fr.traqueur.currencies</groupId>
     <artifactId>currenciesapi</artifactId>
-    <version>1.0.11</version>
+    <version>1.0.12</version>
 </dependency>
 ```
 
@@ -63,7 +64,7 @@ repositories {
 }
 
 dependencies {
-    implementation("fr.traqueur.currencies:currenciesapi:1.0.11")
+    implementation("fr.traqueur.currencies:currenciesapi:1.0.12")
 }
 ```
 
