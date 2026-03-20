@@ -1,26 +1,27 @@
 package fr.traqueur.currencies.providers;
 
 import fr.traqueur.currencies.CurrencyProvider;
-import org.bukkit.OfflinePlayer;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 import java.math.BigDecimal;
+import java.util.UUID;
 
 public class ExperienceProvider implements CurrencyProvider {
 
     @Override
-    public void deposit(OfflinePlayer offlinePlayer, BigDecimal amount, String reason) {
-        if (offlinePlayer.isOnline()) {
-            Player player = offlinePlayer.getPlayer();
+    public void deposit(UUID playerId, BigDecimal amount, String reason) {
+        Player player = Bukkit.getPlayer(playerId);
+        if (player != null) {
             BigDecimal totalExperience = BigDecimal.valueOf(getTotalExperience(player));
             setTotalExperience(player, totalExperience.add(amount).intValue());
         }
     }
 
     @Override
-    public void withdraw(OfflinePlayer offlinePlayer, BigDecimal amount, String reason) {
-        if (offlinePlayer.isOnline()) {
-            Player player = offlinePlayer.getPlayer();
+    public void withdraw(UUID playerId, BigDecimal amount, String reason) {
+        Player player = Bukkit.getPlayer(playerId);
+        if (player != null) {
             BigDecimal totalExperience = BigDecimal.valueOf(getTotalExperience(player));
             BigDecimal newExperience = totalExperience.subtract(amount);
             setTotalExperience(player, newExperience.max(BigDecimal.ZERO).intValue());
@@ -28,11 +29,9 @@ public class ExperienceProvider implements CurrencyProvider {
     }
 
     @Override
-    public BigDecimal getBalance(OfflinePlayer offlinePlayer) {
-        if (offlinePlayer.isOnline()) {
-            Player player = offlinePlayer.getPlayer();
-            return player == null ? BigDecimal.ZERO : BigDecimal.valueOf(getTotalExperience(player));
-        } else return BigDecimal.ZERO;
+    public BigDecimal getBalance(UUID playerId) {
+        Player player = Bukkit.getPlayer(playerId);
+        return player != null ? BigDecimal.valueOf(getTotalExperience(player)) : BigDecimal.ZERO;
     }
 
     private void setTotalExperience(Player player, int experience) {

@@ -3,9 +3,9 @@ package fr.traqueur.currencies.providers;
 import fr.traqueur.currencies.CurrencyProvider;
 import me.qKing12.RoyaleEconomy.API.Currency;
 import me.qKing12.RoyaleEconomy.API.MultiCurrencyHandler;
-import org.bukkit.OfflinePlayer;
 
 import java.math.BigDecimal;
+import java.util.UUID;
 
 public class RoyaleEconomyProvider implements CurrencyProvider {
 
@@ -30,20 +30,20 @@ public class RoyaleEconomyProvider implements CurrencyProvider {
     }
 
     @Override
-    public void deposit(OfflinePlayer offlinePlayer, BigDecimal amount, String reason) {
+    public void deposit(UUID playerId, BigDecimal amount, String reason) {
         initialize();
-        currency.addAmount(offlinePlayer.getUniqueId().toString(), amount.doubleValue());
+        currency.addAmount(playerId.toString(), amount.doubleValue());
     }
 
     @Override
-    public void withdraw(OfflinePlayer offlinePlayer, BigDecimal amount, String reason) {
+    public void withdraw(UUID playerId, BigDecimal amount, String reason) {
         initialize();
-        currency.removeAmount(offlinePlayer.getUniqueId().toString(), amount.doubleValue());
+        currency.removeAmount(playerId.toString(), amount.doubleValue());
     }
 
     @Override
-    public BigDecimal getBalance(OfflinePlayer offlinePlayer) {
+    public BigDecimal getBalance(UUID playerId) {
         initialize();
-        return BigDecimal.valueOf(currency.getAmount(offlinePlayer.getUniqueId().toString()));
+        return BigDecimal.valueOf(currency.getAmount(playerId.toString()));
     }
 }

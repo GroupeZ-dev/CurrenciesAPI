@@ -2,23 +2,23 @@ package fr.traqueur.currencies.providers;
 
 import fr.traqueur.currencies.CurrencyProvider;
 import me.elementalgaming.ElementalTokens.TokenAPI;
-import org.bukkit.OfflinePlayer;
 
 import java.math.BigDecimal;
+import java.util.UUID;
 
 public class ElementalTokensProvider implements CurrencyProvider {
     @Override
-    public void deposit(OfflinePlayer offlinePlayer, BigDecimal amount, String reason) {
-        TokenAPI.addTokens(offlinePlayer.getUniqueId(), amount.longValue());
+    public void deposit(UUID playerId, BigDecimal amount, String reason) {
+        TokenAPI.addTokens(playerId, amount.longValue());
     }
 
     @Override
-    public void withdraw(OfflinePlayer offlinePlayer, BigDecimal amount, String reason) {
-        TokenAPI.removeTokens(offlinePlayer.getUniqueId(), amount.longValue());
+    public void withdraw(UUID playerId, BigDecimal amount, String reason) {
+        TokenAPI.removeTokens(playerId, amount.longValue());
     }
 
     @Override
-    public BigDecimal getBalance(OfflinePlayer offlinePlayer) {
-        return BigDecimal.valueOf(TokenAPI.getTokens(offlinePlayer.getUniqueId()));
+    public BigDecimal getBalance(UUID playerId) {
+        return BigDecimal.valueOf(TokenAPI.getTokens(playerId));
     }
 }

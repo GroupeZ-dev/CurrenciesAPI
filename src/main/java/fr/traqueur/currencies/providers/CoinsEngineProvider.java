@@ -1,10 +1,10 @@
 package fr.traqueur.currencies.providers;
 
 import fr.traqueur.currencies.CurrencyProvider;
-import org.bukkit.OfflinePlayer;
 import su.nightexpress.coinsengine.api.CoinsEngineAPI;
 
 import java.math.BigDecimal;
+import java.util.UUID;
 
 public class CoinsEngineProvider implements CurrencyProvider {
 
@@ -15,17 +15,17 @@ public class CoinsEngineProvider implements CurrencyProvider {
     }
 
     @Override
-    public void deposit(OfflinePlayer offlinePlayer, BigDecimal amount, String reason) {
-        CoinsEngineAPI.addBalance(offlinePlayer.getUniqueId(), this.currencyName, amount.doubleValue());
+    public void deposit(UUID playerId, BigDecimal amount, String reason) {
+        CoinsEngineAPI.addBalance(playerId, this.currencyName, amount.doubleValue());
     }
 
     @Override
-    public void withdraw(OfflinePlayer offlinePlayer, BigDecimal amount, String reason) {
-        CoinsEngineAPI.removeBalance(offlinePlayer.getUniqueId(), this.currencyName, amount.doubleValue());
+    public void withdraw(UUID playerId, BigDecimal amount, String reason) {
+        CoinsEngineAPI.removeBalance(playerId, this.currencyName, amount.doubleValue());
     }
 
     @Override
-    public BigDecimal getBalance(OfflinePlayer offlinePlayer) {
-        return BigDecimal.valueOf(CoinsEngineAPI.getBalance(offlinePlayer.getUniqueId(), this.currencyName));
+    public BigDecimal getBalance(UUID playerId) {
+        return BigDecimal.valueOf(CoinsEngineAPI.getBalance(playerId, this.currencyName));
     }
 }

@@ -3,10 +3,10 @@ package fr.traqueur.currencies.providers;
 import fr.traqueur.currencies.CurrencyProvider;
 import org.black_ixx.playerpoints.PlayerPoints;
 import org.black_ixx.playerpoints.PlayerPointsAPI;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.math.BigDecimal;
+import java.util.UUID;
 
 public class PlayerPointsProvider implements CurrencyProvider {
 
@@ -22,17 +22,17 @@ public class PlayerPointsProvider implements CurrencyProvider {
     }
 
     @Override
-    public void deposit(OfflinePlayer offlinePlayer, BigDecimal amount, String reason) {
-        this.getAPI().give(offlinePlayer.getUniqueId(), amount.intValue());
+    public void deposit(UUID playerId, BigDecimal amount, String reason) {
+        this.getAPI().give(playerId, amount.intValue());
     }
 
     @Override
-    public void withdraw(OfflinePlayer offlinePlayer, BigDecimal amount, String reason) {
-        this.getAPI().take(offlinePlayer.getUniqueId(), amount.intValue());
+    public void withdraw(UUID playerId, BigDecimal amount, String reason) {
+        this.getAPI().take(playerId, amount.intValue());
     }
 
     @Override
-    public BigDecimal getBalance(OfflinePlayer offlinePlayer) {
-        return BigDecimal.valueOf(this.getAPI().look(offlinePlayer.getUniqueId()));
+    public BigDecimal getBalance(UUID playerId) {
+        return BigDecimal.valueOf(this.getAPI().look(playerId));
     }
 }
