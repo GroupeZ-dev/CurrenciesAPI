@@ -47,7 +47,7 @@ To add the Currencies API to your project using Maven, add the following to your
 <dependency>
     <groupId>fr.traqueur.currencies</groupId>
     <artifactId>currenciesapi</artifactId>
-    <version>1.0.12</version>
+    <version>1.0.13</version>
 </dependency>
 ```
 
@@ -64,7 +64,7 @@ repositories {
 }
 
 dependencies {
-    implementation("fr.traqueur.currencies:currenciesapi:1.0.12")
+    implementation("fr.traqueur.currencies:currenciesapi:1.0.13")
 }
 ```
 
