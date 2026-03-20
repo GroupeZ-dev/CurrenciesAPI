@@ -1,13 +1,14 @@
 package fr.traqueur.currencies.providers;
 
 import fr.traqueur.currencies.CurrencyProvider;
-import org.bukkit.OfflinePlayer;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.plugin.Plugin;
 
 import java.math.BigDecimal;
+import java.util.UUID;
 
 public class ItemProvider implements CurrencyProvider {
 
@@ -20,29 +21,29 @@ public class ItemProvider implements CurrencyProvider {
     }
 
     @Override
-    public void deposit(OfflinePlayer offlinePlayer, BigDecimal amount, String reason) {
-        if (offlinePlayer.isOnline()) {
-            Player player = offlinePlayer.getPlayer();
+    public void deposit(UUID playerId, BigDecimal amount, String reason) {
+        Player player = Bukkit.getPlayer(playerId);
+        if (player != null) {
             giveItem(player, amount.intValue(), this.itemStack);
         } else{
-            this.plugin.getLogger().severe("Deposit items to " + offlinePlayer.getName() + " but is offline");
+            this.plugin.getLogger().severe("Deposit items to " + playerId + " but is offline");
         }
     }
 
     @Override
-    public void withdraw(OfflinePlayer offlinePlayer, BigDecimal amount, String reason) {
-        if (offlinePlayer.isOnline()) {
-            Player player = offlinePlayer.getPlayer();
+    public void withdraw(UUID playerId, BigDecimal amount, String reason) {
+        Player player = Bukkit.getPlayer(playerId);
+        if (player != null) {
             removeItems(player, this.itemStack, amount.intValue());
         } else {
-            this.plugin.getLogger().severe("Withdraw items from " + offlinePlayer.getName() + " but is offline");
+            this.plugin.getLogger().severe("Withdraw items from " + playerId + " but is offline");
         }
     }
 
     @Override
-    public BigDecimal getBalance(OfflinePlayer offlinePlayer) {
-        if (offlinePlayer.isOnline()) {
-            Player player = offlinePlayer.getPlayer();
+    public BigDecimal getBalance(UUID playerId) {
+        Player player = Bukkit.getPlayer(playerId);
+        if (player != null) {
             return BigDecimal.valueOf(getAmount(player, this.itemStack));
         } else return BigDecimal.ZERO;
     }

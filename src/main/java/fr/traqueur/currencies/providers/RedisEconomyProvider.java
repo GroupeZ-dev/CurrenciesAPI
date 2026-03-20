@@ -7,6 +7,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 
 import java.math.BigDecimal;
+import java.util.UUID;
 
 public class RedisEconomyProvider implements CurrencyProvider {
 
@@ -30,24 +31,30 @@ public class RedisEconomyProvider implements CurrencyProvider {
     }
 
     @Override
-    public void deposit(OfflinePlayer offlinePlayer, BigDecimal amount, String reason) {
+    public void deposit(UUID playerId, BigDecimal amount, String reason) {
         Currency currency = getCurrency();
         if (currency != null) {
+            OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(playerId);
             currency.depositPlayer(offlinePlayer, amount.doubleValue());
         }
     }
 
     @Override
-    public void withdraw(OfflinePlayer offlinePlayer, BigDecimal amount, String reason) {
+    public void withdraw(UUID playerId, BigDecimal amount, String reason) {
         Currency currency = getCurrency();
         if (currency != null) {
+            OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(playerId);
             currency.withdrawPlayer(offlinePlayer, amount.doubleValue());
         }
     }
 
     @Override
-    public BigDecimal getBalance(OfflinePlayer offlinePlayer) {
+    public BigDecimal getBalance(UUID playerId) {
         Currency currency = getCurrency();
-        return currency != null ? BigDecimal.valueOf(currency.getBalance(offlinePlayer)) : BigDecimal.ZERO;
+        if (currency != null) {
+            OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(playerId);
+            return BigDecimal.valueOf(currency.getBalance(offlinePlayer));
+        }
+        return BigDecimal.ZERO;
     }
 }

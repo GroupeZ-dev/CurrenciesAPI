@@ -5,10 +5,10 @@ import fr.maxlego08.essentials.api.economy.Economy;
 import fr.maxlego08.essentials.api.economy.EconomyManager;
 import fr.traqueur.currencies.CurrencyProvider;
 import org.bukkit.Bukkit;
-import org.bukkit.OfflinePlayer;
 
 import java.math.BigDecimal;
 import java.util.Optional;
+import java.util.UUID;
 
 public class ZEssentialsProvider implements CurrencyProvider {
 
@@ -34,20 +34,20 @@ public class ZEssentialsProvider implements CurrencyProvider {
     }
 
     @Override
-    public void deposit(OfflinePlayer offlinePlayer, BigDecimal amount, String reason) {
+    public void deposit(UUID playerId, BigDecimal amount, String reason) {
         initialize();
-        this.economyManager.deposit(offlinePlayer.getUniqueId(), this.economy, amount, reason);
+        this.economyManager.deposit(playerId, this.economy, amount, reason);
     }
 
     @Override
-    public void withdraw(OfflinePlayer offlinePlayer, BigDecimal amount, String reason) {
+    public void withdraw(UUID playerId, BigDecimal amount, String reason) {
         initialize();
-        this.economyManager.withdraw(offlinePlayer.getUniqueId(), this.economy, amount, reason);
+        this.economyManager.withdraw(playerId, this.economy, amount, reason);
     }
 
     @Override
-    public BigDecimal getBalance(OfflinePlayer offlinePlayer) {
+    public BigDecimal getBalance(UUID playerId) {
         initialize();
-        return this.economyManager.getBalance(offlinePlayer, this.economy);
+        return this.economyManager.getBalance(Bukkit.getOfflinePlayer(playerId), this.economy);
     }
 }

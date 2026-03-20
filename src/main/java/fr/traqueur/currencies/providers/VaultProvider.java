@@ -7,6 +7,7 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.plugin.RegisteredServiceProvider;
 
 import java.math.BigDecimal;
+import java.util.UUID;
 
 public class VaultProvider implements CurrencyProvider {
 
@@ -26,17 +27,20 @@ public class VaultProvider implements CurrencyProvider {
     }
 
     @Override
-    public void deposit(OfflinePlayer offlinePlayer, BigDecimal amount, String reason) {
+    public void deposit(UUID playerId, BigDecimal amount, String reason) {
+        OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(playerId);
         this.getEconomy().depositPlayer(offlinePlayer, amount.doubleValue());
     }
 
     @Override
-    public void withdraw(OfflinePlayer offlinePlayer, BigDecimal amount, String reason) {
+    public void withdraw(UUID playerId, BigDecimal amount, String reason) {
+        OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(playerId);
         this.getEconomy().withdrawPlayer(offlinePlayer, amount.doubleValue());
     }
 
     @Override
-    public BigDecimal getBalance(OfflinePlayer offlinePlayer) {
+    public BigDecimal getBalance(UUID playerId) {
+        OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(playerId);
         return BigDecimal.valueOf(this.getEconomy().getBalance(offlinePlayer));
     }
 }

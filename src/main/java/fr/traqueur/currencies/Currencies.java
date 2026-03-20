@@ -2,13 +2,13 @@ package fr.traqueur.currencies;
 
 import fr.traqueur.currencies.providers.*;
 import org.bukkit.Bukkit;
-import org.bukkit.OfflinePlayer;
 
 import java.lang.reflect.Constructor;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * The list of all the currencies that can be used in the plugin.
@@ -154,88 +154,91 @@ public enum Currencies {
     /**
      * Add some money to a player.
      *
-     * @param player The player to add the money.
-     * @param amount The amount of money to add.
-     * @param reason The reason of the deposit.
+     * @param playerId The UUID of the player to add the money.
+     * @param amount   The amount of money to add.
+     * @param reason   The reason of the deposit.
      */
-    public void deposit(OfflinePlayer player, BigDecimal amount, String reason) {
-        this.deposit(player, amount, "default", reason);
+    public void deposit(UUID playerId, BigDecimal amount, String reason) {
+        this.deposit(playerId, amount, "default", reason);
     }
 
     /**
      * Remove some money from a player.
      *
-     * @param player The player to remove the money.
-     * @param amount The amount of money to remove.
-     * @param reason The reason of the withdrawal.
+     * @param playerId The UUID of the player to remove the money.
+     * @param amount   The amount of money to remove.
+     * @param reason   The reason of the withdrawal.
      */
-    public void withdraw(OfflinePlayer player, BigDecimal amount, String reason) {
-        this.withdraw(player, amount, "default", reason);
+    public void withdraw(UUID playerId, BigDecimal amount, String reason) {
+        this.withdraw(playerId, amount, "default", reason);
     }
 
     /**
      * Add some money to a player.
      *
-     * @param player The player to add the money.
-     * @param amount The amount of money to add.
+     * @param playerId The UUID of the player to add the money.
+     * @param amount   The amount of money to add.
      */
-    public void deposit(OfflinePlayer player, BigDecimal amount) {
-        this.deposit(player, amount, "default", "No reason");
+    public void deposit(UUID playerId, BigDecimal amount) {
+        this.deposit(playerId, amount, "default", "No reason");
     }
 
     /**
      * Remove some money from a player.
      *
-     * @param player The player to remove the money.
-     * @param amount The amount of money to remove.
+     * @param playerId The UUID of the player to remove the money.
+     * @param amount   The amount of money to remove.
      */
-    public void withdraw(OfflinePlayer player, BigDecimal amount) {
-        this.withdraw(player, amount, "default", "No reason");
+    public void withdraw(UUID playerId, BigDecimal amount) {
+        this.withdraw(playerId, amount, "default", "No reason");
     }
 
     /**
      * Get the balance of a player.
      *
-     * @param player The player to get the balance.
+     * @param playerId The UUID of the player to get the balance.
      * @return The balance of the player.
      */
-    public BigDecimal getBalance(OfflinePlayer player) {
-        return getBalance(player, "default");
+    public BigDecimal getBalance(UUID playerId) {
+        return getBalance(playerId, "default");
     }
 
     /**
      * Add some money to a player.
      *
-     * @param player The player to add the money.
-     * @param amount The amount of money to add.
-     * @param reason The reason of the deposit.
+     * @param playerId     The UUID of the player to add the money.
+     * @param amount       The amount of money to add.
+     * @param currencyName The name of the currency.
+     * @param reason       The reason of the deposit.
      */
-    public void deposit(OfflinePlayer player, BigDecimal amount, String currencyName, String reason) {
+    public void deposit(UUID playerId, BigDecimal amount, String currencyName, String reason) {
         this.canBeUse(currencyName);
-        this.providers.get(currencyName).deposit(player, amount, reason);
+        this.providers.get(currencyName).deposit(playerId, amount, reason);
     }
 
     /**
      * Remove some money from a player.
      *
-     * @param player The player to remove the money.
-     * @param amount The amount of money to remove.
-     * @param reason The reason of the withdrawal.
+     * @param playerId     The UUID of the player to remove the money.
+     * @param amount       The amount of money to remove.
+     * @param currencyName The name of the currency.
+     * @param reason       The reason of the withdrawal.
      */
-    public void withdraw(OfflinePlayer player, BigDecimal amount, String currencyName, String reason) {
+    public void withdraw(UUID playerId, BigDecimal amount, String currencyName, String reason) {
         this.canBeUse(currencyName);
-        this.providers.get(currencyName).withdraw(player, amount, reason);
+        this.providers.get(currencyName).withdraw(playerId, amount, reason);
     }
 
     /**
      * Get the balance of a player.
      *
-     * @param player The player to get the balance.
+     * @param playerId     The UUID of the player to get the balance.
+     * @param currencyName The name of the currency.
      * @return The balance of the player.
      */
-    public BigDecimal getBalance(OfflinePlayer player, String currencyName) {
+    public BigDecimal getBalance(UUID playerId, String currencyName) {
         this.canBeUse(currencyName);
-        return this.providers.get(currencyName).getBalance(player);
+        return this.providers.get(currencyName).getBalance(playerId);
     }
 
     private void canBeUse(String currencyName) {
