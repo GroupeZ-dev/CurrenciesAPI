@@ -7,7 +7,9 @@ import java.lang.reflect.Constructor;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -80,7 +82,14 @@ public enum Currencies {
     /**
      * The currency ExcellentEconomy from the plugin ExcellentEconomy (new name for CraftEngine)
      */
-    EXCELLENTEECONOMY("ExcellentEconomy", ExcellentEconomyProvider.class, true, true)
+    EXCELLENTECONOMY("ExcellentEconomy", ExcellentEconomyProvider.class, true, true),
+    /**
+     * @deprecated Use {@link #EXCELLENTECONOMY} instead. Kept so old code and configs
+     *             referencing {@code EXCELLENTEECONOMY} keep working. Will be removed
+     *             in a future version.
+     */
+    @Deprecated
+    EXCELLENTEECONOMY("ExcellentEconomy", ExcellentEconomyProvider.class, true, true, EXCELLENTECONOMY)
     ;
 
     static {
@@ -92,6 +101,8 @@ public enum Currencies {
     private final boolean autoCreate;
     private final boolean currencySpecific;
     private final Map<String, CurrencyProvider> providers;
+    private final Currencies renamedTo;
+    private static final Set<String> WARNED_DEPRECATED = new HashSet<>();
 
     Currencies(String name, Class<? extends CurrencyProvider> providerClass) {
         this(name, providerClass, true, false);
@@ -102,11 +113,35 @@ public enum Currencies {
     }
 
     Currencies(String name, Class<? extends CurrencyProvider> providerClass, boolean autoCreate, boolean currencySpecific) {
+        this(name, providerClass, autoCreate, currencySpecific, null);
+    }
+
+    Currencies(String name, Class<? extends CurrencyProvider> providerClass, boolean autoCreate, boolean currencySpecific, Currencies renamedTo) {
         this.name = name;
         this.providerClass = providerClass;
         this.autoCreate = autoCreate;
         this.providers = new HashMap<>();
         this.currencySpecific = currencySpecific;
+        this.renamedTo = renamedTo;
+    }
+
+    /**
+     * Resolve a currency by its name, redirecting deprecated aliases to their canonical
+     * constant while logging a one-time warning.
+     *
+     * @param name The name of the currency (e.g. {@code "VAULT"}, {@code "EXCELLENTECONOMY"}).
+     * @return The canonical currency.
+     * @throws IllegalArgumentException if the name is unknown.
+     */
+    public static Currencies fromName(String name) {
+        Currencies currency = Currencies.valueOf(name);
+        if (currency.renamedTo != null) {
+            if (WARNED_DEPRECATED.add(name)) {
+                Bukkit.getLogger().warning("The currency name '" + name + "' is deprecated, use '" + currency.renamedTo.name() + "' instead.");
+            }
+            return currency.renamedTo;
+        }
+        return currency;
     }
 
     /**

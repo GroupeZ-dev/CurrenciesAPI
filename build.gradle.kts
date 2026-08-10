@@ -48,7 +48,8 @@ dependencies {
     compileOnly("com.willfp:EcoBits:1.8.4")
     compileOnly("com.bencodez:votingplugin:6.17.2")
     compileOnly("com.github.Emibergo02:RedisEconomy:4.3.19")
-    compileOnly("su.nightexpress.coinsengine:CoinsEngine:2.7.0")
+    compileOnly("io.lettuce:lettuce-core:6.4.0.RELEASE")
+    compileOnly("su.nightexpress.excellenteconomy:ExcellentEconomy:2.8.0")
 
     compileOnly("fr.maxlego08.menu:zmenu-api:1.1.0.6")
 

@@ -20,7 +20,7 @@ The `Currencies` enum allows easy management of various in-game currencies like 
 - [zMenu](https://www.spigotmc.org/resources/110402/) - `ZMENUITEMS`
 - [EcoBits](https://www.spigotmc.org/resources/109967/) - `ECOBITS`
 - [CoinsEngine](https://www.spigotmc.org/resources/84121/) - `COINSENGINE`
-- [ExcellentEconomy](https://modrinth.com/plugin/excellenteconomy) - `EXCELLENTEECONOMY`
+- [ExcellentEconomy](https://modrinth.com/plugin/excellenteconomy) - `EXCELLENTECONOMY`
 - [VotingPlugin](https://www.spigotmc.org/resources/15358/) - `VOTINGPLUGIN`
 - [RedisEconomy](https://www.spigotmc.org/resources/105965/) - `REDISECONOMY`
 - [RoyaleEconomy](https://polymart.org/product/113/royaleeconomy-1-8-1-21) - `ROYALEECONOMY`
@@ -91,6 +91,16 @@ Each currency is represented as an enum value in `Currencies`. You can access a 
 ```java
 Currencies currency = Currencies.VAULT;
 ```
+
+### Resolving a Currency from a String
+
+To resolve a currency from a config value (e.g. a string stored in a YAML file), use `Currencies.fromName(String)` instead of `Enum.valueOf`. It redirects deprecated aliases to their canonical constant and logs a one-time warning, so old configs keep working while new ones use the correct name.
+
+```java
+Currencies currency = Currencies.fromName("EXCELLENTECONOMY");
+```
+
+Note: `EXCELLENTEECONOMY` is a deprecated alias of `EXCELLENTECONOMY` and is only kept for backward compatibility.
 
 ### Creating a Provider Instance
 
