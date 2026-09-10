@@ -2,7 +2,10 @@ package fr.traqueur.currencies.providers;
 
 import dev.unnm3d.rediseconomy.api.RedisEconomyAPI;
 import dev.unnm3d.rediseconomy.currency.Currency;
+import fr.traqueur.currencies.CurrencyArgumentChecks;
 import fr.traqueur.currencies.CurrencyProvider;
+import fr.traqueur.currencies.TransactionResult;
+import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 
@@ -56,5 +59,54 @@ public class RedisEconomyProvider implements CurrencyProvider {
             return BigDecimal.valueOf(currency.getBalance(offlinePlayer));
         }
         return BigDecimal.ZERO;
+    }
+
+    @Override
+    public boolean hasNativeConditionalWithdraw() {
+        return true;
+    }
+
+    @Override
+    public TransactionResult withdrawIfSufficient(UUID playerId, BigDecimal amount, String reason) {
+        TransactionResult invalid = CurrencyArgumentChecks.findProblem(playerId, amount);
+        if (invalid != null) {
+            return invalid;
+        }
+
+        try {
+            Currency currency = this.getCurrency();
+            if (currency == null) {
+                return TransactionResult.failed(amount, "The RedisEconomy currency " + this.economyName + " was not found.");
+            }
+
+            OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(playerId);
+            EconomyResponse response = currency.withdrawPlayer(offlinePlayer, amount.doubleValue());
+            if (response == null) {
+                return TransactionResult.failed(amount, "RedisEconomy returned no response.");
+            }
+
+            if (response.type == EconomyResponse.ResponseType.SUCCESS) {
+                return TransactionResult.nativeSuccess(amount, BigDecimal.valueOf(response.balance));
+            }
+
+            if (response.type == EconomyResponse.ResponseType.NOT_IMPLEMENTED) {
+                return TransactionResult.unsupported(amount, "RedisEconomy does not implement withdrawPlayer.");
+            }
+
+            if (!currency.has(playerId, amount.doubleValue())) {
+                return TransactionResult.nativeInsufficientFunds(amount, BigDecimal.valueOf(currency.getBalance(playerId)));
+            }
+
+            return TransactionResult.failed(amount, response.errorMessage == null
+                    ? "RedisEconomy refused the withdrawal."
+                    : response.errorMessage);
+        } catch (Exception exception) {
+            return TransactionResult.failed(amount, "RedisEconomy threw while withdrawing: " + exception.getMessage());
+        }
+    }
+
+    @Override
+    public boolean requiresMainThread() {
+        return false;
     }
 }

@@ -46,7 +46,9 @@ dependencies {
     compileOnly("com.github.MilkBowl:VaultAPI:1.7")
     compileOnly("com.github.PlayerNguyen:OptEco:2.1.4b")
     compileOnly("com.willfp:EcoBits:1.8.4")
-    compileOnly("com.bencodez:votingplugin:6.17.2")
+    compileOnly("com.bencodez:votingplugin:6.17.2") {
+        exclude(group = "org.mozilla", module = "rhino")
+    }
     compileOnly("com.github.Emibergo02:RedisEconomy:4.3.19")
     compileOnly("io.lettuce:lettuce-core:6.4.0.RELEASE")
     compileOnly("su.nightexpress.excellenteconomy:ExcellentEconomy:2.8.0")

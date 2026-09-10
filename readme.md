@@ -136,6 +136,135 @@ Currencies.ZESSENTIALS.getBalance(player, "coins");
 
 ```
 
+### Safe Purchases: `withdrawIfSufficient`
+
+`withdraw` does **not** check whether the player can afford the amount. Most backends will happily
+drive a balance negative or silently clamp it to zero. Checking the balance first and then calling
+`withdraw` is not safe either, because anything can happen between the two calls: a second click, a
+second server, or an economy plugin that commits its writes asynchronously. That gap is a
+double-spend.
+
+Use `withdrawIfSufficient` for anything that is paying for something. It performs the check and the
+debit as one operation and tells you what happened:
+
+```java
+TransactionResult result = Currencies.VAULT.withdrawIfSufficient(
+        playerId, new BigDecimal("1000"), "Shop purchase");
+
+switch (result.getStatus()) {
+    case SUCCESS:
+        // The money is gone. Only now hand over the goods.
+        break;
+    case INSUFFICIENT_FUNDS:
+        player.sendMessage("You cannot afford this.");
+        break;
+    case UNSUPPORTED:
+        // The backend cannot do this at all. Nothing was debited.
+        break;
+    case FAILED:
+        // Something went wrong. Nothing was debited.
+        break;
+}
+```
+
+**Nothing is ever debited unless the status is `SUCCESS`.** That is the only case where you should
+hand out the goods.
+
+An asynchronous variant is available and never completes exceptionally, failures come back through
+the result:
+
+```java
+Currencies.VAULT.withdrawIfSufficientAsync(playerId, amount, "default", "Shop purchase")
+        .thenAccept(result -> { /* ... */ });
+```
+
+### Atomicity Per Backend
+
+Some backends can refuse a withdrawal themselves, others cannot. When a backend cannot, the library
+emulates the operation by locking around a balance read and a withdraw. That stops one server racing
+itself, but it **cannot** stop a second server acting on the same shared economy.
+
+Ask before you rely on it, either up front or from the result:
+
+```java
+if (!Currencies.VAULT.hasNativeConditionalWithdraw("default")) {
+    getLogger().warning("This currency cannot guarantee atomic purchases across servers.");
+}
+
+result.isBackendGuaranteed(); // false when the library had to emulate the operation
+```
+
+| Currency | Atomic | Notes |
+| --- | --- | --- |
+| `VAULT` | yes | As atomic as the underlying economy plugin |
+| `PLAYERPOINTS` | yes | `take` refuses when the balance is too low |
+| `ZESSENTIALS` | yes | `withdraw` reports the outcome |
+| `REDISECONOMY` | yes | Validated in Redis, so it holds across servers |
+| `EXCELLENTECONOMY` | yes | Native async operation with a result |
+| `VOTINGPLUGIN` | yes | `removePoints` reports the outcome |
+| `ITEM`, `ZMENUITEMS` | yes | Player inventory, main thread only |
+| `LEVEL`, `EXPERIENCE` | yes | Player state, main thread only |
+| `COINSENGINE` | no | Its boolean means "currency found", not "could afford" |
+| `ECOBITS` | no | `adjustBalance` returns nothing |
+| `BEASTTOKENS` | no | `removeTokens` returns nothing |
+| `ROYALEECONOMY` | no | `removeBalance` returns nothing |
+| `ELEMENTALTOKENS`, `ELEMENTALGEMS` | no | `removeTokens` / `removeGems` return nothing |
+
+If you run a network where several servers share one economy database, only the currencies marked
+atomic are safe against cross-server double spends. For the others the fix has to come from the
+economy plugin itself.
+
+### Custom Economies
+
+`Currencies` is an enum, so it cannot be extended. To plug in your own economy, implement
+`CurrencyProvider` and register the instance:
+
+```java
+public class MyGemsProvider implements CurrencyProvider {
+    public void deposit(UUID playerId, BigDecimal amount, String reason) { /* ... */ }
+    public void withdraw(UUID playerId, BigDecimal amount, String reason) { /* ... */ }
+    public BigDecimal getBalance(UUID playerId) { /* ... */ }
+}
+
+CurrencyRegistry.register("my_gems", new MyGemsProvider());
+
+TransactionResult result = CurrencyRegistry.withdrawIfSufficient(
+        "my_gems", playerId, BigDecimal.TEN, "Shop purchase");
+```
+
+When you override `withdrawIfSufficient`, build the result with the factory that matches who made
+the decision: `TransactionResult.nativeSuccess(...)` / `nativeInsufficientFunds(...)` when your
+backend checked the funds itself, or `emulatedSuccess(...)` / `emulatedInsufficientFunds(...)` when
+you checked them yourself. `unsupported(...)` and `failed(...)` cover the rest. That is what
+`isBackendGuaranteed()` reports back to the caller.
+
+To look a registered currency up, `CurrencyRegistry.require(name)` throws when there is none and
+`CurrencyRegistry.find(name)` returns null. Use `registerOrReplace(...)` to deliberately swap an
+implementation, for example on a config reload.
+
+Those three methods are all you have to write. Everything else has a default implementation, so an
+existing provider keeps working unchanged. Two optional overrides are worth knowing about:
+
+- `hasNativeConditionalWithdraw()` and `withdrawIfSufficient(...)`: override both when your backend can
+  refuse a withdrawal itself. You get a real guarantee instead of the emulated one. Call
+  `CurrencyArgumentChecks.findProblem(playerId, amount)` first so your implementation rejects the same bad
+  inputs as every other provider.
+- `requiresMainThread()`: **defaults to `true`**, because most Bukkit APIs are not thread safe.
+  Override it to return `false` only if your backend is documented as safe for concurrent access.
+  Leaving it `true` means `withdrawIfSufficientAsync` hops back to the main thread for you.
+
+### Asynchronous Access and `CurrenciesAPI.init`
+
+Scheduling work back onto the main server thread needs a plugin instance. If you intend to use the
+asynchronous API with a main-thread-bound currency, call this once in `onEnable`:
+
+```java
+CurrenciesAPI.init(this);
+```
+
+Without it, an asynchronous call on such a currency returns a `FAILED` result explaining what is
+missing, rather than touching player state from the wrong thread.
+
 ### Example Usage
 
 Here is a more complete example of how to use the `Currencies` class within a Minecraft plugin. In this example, we create an economy instance with `zEssentials` and provide a command that allows players to choose between `Vault` and `zEssentials` to deposit or withdraw an amount.
@@ -221,3 +350,4 @@ public class MyPlugin extends JavaPlugin {
     }
 }
 
+```
