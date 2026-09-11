@@ -46,7 +46,9 @@ dependencies {
     compileOnly("com.github.MilkBowl:VaultAPI:1.7")
     compileOnly("com.github.PlayerNguyen:OptEco:2.1.4b")
     compileOnly("com.willfp:EcoBits:1.8.4")
-    compileOnly("com.bencodez:votingplugin:6.17.2")
+    compileOnly("com.bencodez:votingplugin:6.17.2") {
+        exclude(group = "org.mozilla", module = "rhino")
+    }
     compileOnly("com.github.Emibergo02:RedisEconomy:4.3.19")
     compileOnly("io.lettuce:lettuce-core:6.4.0.RELEASE")
     compileOnly("su.nightexpress.excellenteconomy:ExcellentEconomy:2.8.0")
@@ -62,6 +64,16 @@ dependencies {
     compileOnly(files("libs/CoinsEngine-2.4.2.jar"))
     compileOnly(files("libs/nightcore-2.7.1.jar"))
     compileOnly(files("libs/RoyaleEconomyAPI.jar"))
+
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.2")
+    testImplementation("org.junit.jupiter:junit-jupiter-params:5.8.2")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.8.2")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.8.2")
+    testCompileOnly("org.spigotmc:spigot-api:1.21.1-R0.1-SNAPSHOT")
+}
+
+tasks.test {
+    useJUnitPlatform()
 }
 
 val targetJavaVersion = 8

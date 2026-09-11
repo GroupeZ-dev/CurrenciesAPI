@@ -1,6 +1,9 @@
 package fr.traqueur.currencies.providers;
 
+import fr.traqueur.currencies.CurrencyArgumentChecks;
 import fr.traqueur.currencies.CurrencyProvider;
+import fr.traqueur.currencies.Guarantee;
+import fr.traqueur.currencies.TransactionResult;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -24,7 +27,7 @@ public class ItemProvider implements CurrencyProvider {
     public void deposit(UUID playerId, BigDecimal amount, String reason) {
         Player player = Bukkit.getPlayer(playerId);
         if (player != null) {
-            giveItem(player, amount.intValue(), this.itemStack);
+            this.giveItem(player, amount.intValue(), this.itemStack);
         } else{
             this.plugin.getLogger().severe("Deposit items to " + playerId + " but is offline");
         }
@@ -34,7 +37,7 @@ public class ItemProvider implements CurrencyProvider {
     public void withdraw(UUID playerId, BigDecimal amount, String reason) {
         Player player = Bukkit.getPlayer(playerId);
         if (player != null) {
-            removeItems(player, this.itemStack, amount.intValue());
+            this.removeItems(player, this.itemStack, amount.intValue());
         } else {
             this.plugin.getLogger().severe("Withdraw items from " + playerId + " but is offline");
         }
@@ -44,7 +47,7 @@ public class ItemProvider implements CurrencyProvider {
     public BigDecimal getBalance(UUID playerId) {
         Player player = Bukkit.getPlayer(playerId);
         if (player != null) {
-            return BigDecimal.valueOf(getAmount(player, this.itemStack));
+            return BigDecimal.valueOf(this.getAmount(player, this.itemStack));
         } else return BigDecimal.ZERO;
     }
 
@@ -89,11 +92,11 @@ public class ItemProvider implements CurrencyProvider {
         if (value > 64) {
             value -= 64;
             itemStack.setAmount(64);
-            give(player, itemStack);
-            giveItem(player, value, itemStack);
+            this.give(player, itemStack);
+            this.giveItem(player, value, itemStack);
         } else {
             itemStack.setAmount((int) value);
-            give(player, itemStack);
+            this.give(player, itemStack);
         }
     }
 
@@ -102,7 +105,7 @@ public class ItemProvider implements CurrencyProvider {
     }
 
     private void give(Player player, ItemStack item) {
-        if (hasInventoryFull(player)) player.getWorld().dropItem(player.getLocation(), item);
+        if (this.hasInventoryFull(player)) player.getWorld().dropItem(player.getLocation(), item);
         else player.getInventory().addItem(item);
     }
 
@@ -114,5 +117,47 @@ public class ItemProvider implements CurrencyProvider {
             if (itemStack == null) slot++;
         }
         return slot == 0;
+    }
+
+    @Override
+    public Guarantee getWithdrawGuarantee() {
+        return Guarantee.NATIVE;
+    }
+
+    @Override
+    public TransactionResult withdrawIfSufficient(UUID playerId, BigDecimal amount, String reason) {
+        TransactionResult invalid = CurrencyArgumentChecks.findProblem(playerId, amount);
+        if (invalid != null) {
+            return invalid;
+        }
+
+        Player player = Bukkit.getPlayer(playerId);
+        if (player == null) {
+            return TransactionResult.failed(amount, "Items can only be taken from an online player.");
+        }
+
+        if (amount.stripTrailingZeros().scale() > 0) {
+            return TransactionResult.failed(amount, "An item currency only supports whole amounts, got " + amount + ".");
+        }
+
+        int cost;
+        try {
+            cost = amount.intValueExact();
+        } catch (ArithmeticException exception) {
+            return TransactionResult.failed(amount, "The amount does not fit in an integer item count: " + amount + ".");
+        }
+
+        ItemStack currencyItem = this.getItemStack(player);
+        if (currencyItem == null) {
+            return TransactionResult.failed(amount, "The currency item could not be resolved for " + player.getName() + ".");
+        }
+
+        int held = this.getAmount(player, currencyItem);
+        if (held < cost) {
+            return TransactionResult.insufficientFunds(amount, BigDecimal.valueOf(held), Guarantee.NATIVE);
+        }
+
+        this.removeItems(player, currencyItem, cost);
+        return TransactionResult.success(amount, BigDecimal.valueOf(held - cost), Guarantee.NATIVE);
     }
 }
