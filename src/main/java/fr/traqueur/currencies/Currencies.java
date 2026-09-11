@@ -2,6 +2,8 @@ package fr.traqueur.currencies;
 
 import fr.traqueur.currencies.providers.*;
 import org.bukkit.Bukkit;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Constructor;
 import java.math.BigDecimal;
@@ -11,6 +13,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * The list of all the currencies that can be used in the plugin.
@@ -91,6 +94,9 @@ public enum Currencies {
     @Deprecated
     EXCELLENTEECONOMY("ExcellentEconomy", ExcellentEconomyProvider.class, true, true, EXCELLENTECONOMY)
     ;
+
+    final static String DEFAULT_CURRENCY_NAME = "default";
+    private final static String DEFAULT_REASON = "No reason";
 
     static {
         Updater.checkUpdates();
@@ -194,7 +200,7 @@ public enum Currencies {
      * @param reason   The reason of the deposit.
      */
     public void deposit(UUID playerId, BigDecimal amount, String reason) {
-        this.deposit(playerId, amount, "default", reason);
+        this.deposit(playerId, amount, DEFAULT_CURRENCY_NAME, reason);
     }
 
     /**
@@ -205,7 +211,7 @@ public enum Currencies {
      * @param reason   The reason of the withdrawal.
      */
     public void withdraw(UUID playerId, BigDecimal amount, String reason) {
-        this.withdraw(playerId, amount, "default", reason);
+        this.withdraw(playerId, amount, DEFAULT_CURRENCY_NAME, reason);
     }
 
     /**
@@ -215,7 +221,7 @@ public enum Currencies {
      * @param amount   The amount of money to add.
      */
     public void deposit(UUID playerId, BigDecimal amount) {
-        this.deposit(playerId, amount, "default", "No reason");
+        this.deposit(playerId, amount, DEFAULT_CURRENCY_NAME, DEFAULT_REASON);
     }
 
     /**
@@ -225,7 +231,7 @@ public enum Currencies {
      * @param amount   The amount of money to remove.
      */
     public void withdraw(UUID playerId, BigDecimal amount) {
-        this.withdraw(playerId, amount, "default", "No reason");
+        this.withdraw(playerId, amount, DEFAULT_CURRENCY_NAME, DEFAULT_REASON);
     }
 
     /**
@@ -235,7 +241,7 @@ public enum Currencies {
      * @return The balance of the player.
      */
     public BigDecimal getBalance(UUID playerId) {
-        return getBalance(playerId, "default");
+        return this.getBalance(playerId, DEFAULT_CURRENCY_NAME);
     }
 
     /**
@@ -276,19 +282,89 @@ public enum Currencies {
         return this.providers.get(currencyName).getBalance(playerId);
     }
 
+    /**
+     * Remove some money from a player, but only if the player can actually afford it.
+     *
+     * <p>This is the operation to use for a purchase. Unlike calling {@link #getBalance} and then
+     * {@link #withdraw}, nothing can slip in between the check and the debit.</p>
+     *
+     * @param playerId The UUID of the player to debit.
+     * @param amount   The amount to debit, must be strictly positive.
+     * @param reason   The reason of the withdrawal.
+     * @return The outcome. Nothing is debited unless the status is
+     * {@link TransactionResult.Status#SUCCESS}.
+     */
+    @NotNull
+    public TransactionResult withdrawIfSufficient(@NotNull UUID playerId, @NotNull BigDecimal amount, @Nullable String reason) {
+        return this.withdrawIfSufficient(playerId, amount, DEFAULT_CURRENCY_NAME, reason);
+    }
+
+    /**
+     * Remove some money from a player, but only if the player can actually afford it.
+     *
+     * @param playerId     The UUID of the player to debit.
+     * @param amount       The amount to debit, must be strictly positive.
+     * @param currencyName The name of the currency.
+     * @param reason       The reason of the withdrawal.
+     * @return The outcome. Nothing is debited unless the status is
+     * {@link TransactionResult.Status#SUCCESS}.
+     */
+    @NotNull
+    public TransactionResult withdrawIfSufficient(@NotNull UUID playerId, @NotNull BigDecimal amount, @NotNull String currencyName, @Nullable String reason) {
+        this.canBeUse(currencyName);
+        return this.providers.get(currencyName).withdrawIfSufficient(playerId, amount, reason);
+    }
+
+    /**
+     * Asynchronous variant of {@link #withdrawIfSufficient(UUID, BigDecimal, String, String)}.
+     *
+     * @param playerId     The UUID of the player to debit.
+     * @param amount       The amount to debit, must be strictly positive.
+     * @param currencyName The name of the currency.
+     * @param reason       The reason of the withdrawal.
+     * @return A future completed with the outcome.
+     */
+    @NotNull
+    public CompletableFuture<TransactionResult> withdrawIfSufficientAsync(@NotNull UUID playerId, @NotNull BigDecimal amount, @NotNull String currencyName, @Nullable String reason) {
+        this.canBeUse(currencyName);
+        return this.providers.get(currencyName).withdrawIfSufficientAsync(playerId, amount, reason);
+    }
+
+    /**
+     * Returns the provider backing this currency, creating it if necessary.
+     *
+     * <p>Useful for inspecting a provider's capabilities, and the point
+     * {@link CurrencyRegistry#resolve(String, String)} bridges to so that a built-in currency and a
+     * custom one can be looked up the same way.</p>
+     *
+     * @param currencyName The name of the currency.
+     * @return The provider.
+     */
+    @NotNull
+    public CurrencyProvider getProvider(@NotNull String currencyName) {
+        this.canBeUse(currencyName);
+        return this.providers.get(currencyName);
+    }
+
+    @NotNull
+    public Guarantee getWithdrawGuarantee(@NotNull String currencyName) {
+        this.canBeUse(currencyName);
+        return this.providers.get(currencyName).getWithdrawGuarantee();
+    }
+
     private void canBeUse(String currencyName) {
         if (this.isDisable()) {
             throw new IllegalStateException("The plugin " + this.name + " is not enable.");
         }
-        if (autoCreate) {
+        if (this.autoCreate) {
 
-            if (currencySpecific) {
-                registerProvider(currencyName, currencyName);
+            if (this.currencySpecific) {
+                this.registerProvider(currencyName, currencyName);
             } else {
-                registerProvider(currencyName);
+                this.registerProvider(currencyName);
             }
         } else if (!this.providers.containsKey(currencyName)) {
-            String currency = name.equalsIgnoreCase("default") ? "" : " and for the currency " + name;
+            String currency = this.name.equalsIgnoreCase(DEFAULT_CURRENCY_NAME) ? "" : " and for the currency " + name;
             throw new IllegalStateException("You must create the provider for the plugin " + this.name + currency + " before using it.");
         }
     }

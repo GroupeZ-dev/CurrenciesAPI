@@ -47,7 +47,7 @@ To add the Currencies API to your project using Maven, add the following to your
 <dependency>
     <groupId>fr.traqueur.currencies</groupId>
     <artifactId>currenciesapi</artifactId>
-    <version>1.0.14</version>
+    <version>1.0.15</version>
 </dependency>
 ```
 
@@ -64,7 +64,7 @@ repositories {
 }
 
 dependencies {
-    implementation("fr.traqueur.currencies:currenciesapi:1.0.14")
+    implementation("fr.traqueur.currencies:currenciesapi:1.0.15")
 }
 ```
 
@@ -135,6 +135,180 @@ Currencies.ITEM.getBalance(player, "gold");
 Currencies.ZESSENTIALS.getBalance(player, "coins");
 
 ```
+
+#### The default economy
+
+Every method that takes a currency name has an overload that does not. Those overloads use the
+currency named `"default"`, which is why `"default"` shows up in the examples further down:
+
+```java
+// These two are the same call
+Currencies.VAULT.getBalance(playerId);
+Currencies.VAULT.getBalance(playerId, "default");
+
+// And so are these
+Currencies.VAULT.withdrawIfSufficient(playerId, amount, "Shop purchase");
+Currencies.VAULT.withdrawIfSufficient(playerId, amount, "default", "Shop purchase");
+```
+
+For a single-currency backend such as Vault there is nothing else to know: everything lives under
+`"default"` and the short overloads are all you need. For a multi-currency backend the name selects
+which currency you mean, and the short overloads would look for one actually called `"default"`, so
+pass the name explicitly.
+
+### Safe Purchases: `withdrawIfSufficient`
+
+`withdraw` does **not** check whether the player can afford the amount. Most backends will happily
+drive a balance negative or silently clamp it to zero. Checking the balance first and then calling
+`withdraw` is not safe either, because anything can happen between the two calls: a second click, a
+second server, or an economy plugin that commits its writes asynchronously. That gap is a
+double-spend.
+
+Use `withdrawIfSufficient` for anything that is paying for something. It performs the check and the
+debit as one operation and tells you what happened:
+
+```java
+TransactionResult result = Currencies.VAULT.withdrawIfSufficient(
+        playerId, new BigDecimal("1000"), "Shop purchase");
+
+switch (result.getStatus()) {
+    case SUCCESS:
+        // The money is gone. Only now hand over the goods.
+        break;
+    case INSUFFICIENT_FUNDS:
+        player.sendMessage("You cannot afford this.");
+        break;
+    case UNSUPPORTED:
+        // The backend cannot do this at all. Nothing was debited.
+        break;
+    case FAILED:
+        // Something went wrong. Nothing was debited.
+        break;
+}
+```
+
+**Only hand out the goods on `SUCCESS`.** `INSUFFICIENT_FUNDS` and `UNSUPPORTED` never debit
+anything. `FAILED` normally does not either, but it cannot promise it: a backend that throws after
+it has already applied the withdrawal is indistinguishable from one that failed cleanly, so treat
+`FAILED` as "no goods, and worth logging" rather than as proof the balance is untouched.
+
+An asynchronous variant is available and never completes exceptionally, failures come back through
+the result:
+
+```java
+Currencies.VAULT.withdrawIfSufficientAsync(playerId, amount, "default", "Shop purchase")
+        .thenAccept(result -> { /* ... */ });
+```
+
+### Guarantee Per Backend
+
+Backends differ in how strong a promise they can make, and it is not a yes or no question. Three
+levels, reported by `Guarantee`:
+
+| Level | Meaning |
+| --- | --- |
+| `NATIVE` | The backend validated the funds inside storage every server shares. Safe against a cross-server double spend. |
+| `DELEGATED` | The backend reported the outcome, but does not promise the check and the debit were indivisible. Trustworthy for one request, not a cross-server guarantee. |
+| `EMULATED` | This library did the check and the debit itself under a lock. Protects one server against racing itself only. |
+
+Ask up front, or read it off the result:
+
+```java
+if (!Currencies.VAULT.getWithdrawGuarantee("default").isCrossServerSafe()) {
+    getLogger().warning("This currency cannot guarantee purchases across servers.");
+}
+
+result.getGuarantee(); // NATIVE, DELEGATED or EMULATED
+```
+
+| Currency | Guarantee | Notes |
+| --- | --- | --- |
+| `REDISECONOMY` | `NATIVE` | Validated in Redis, so it holds across servers |
+| `EXCELLENTECONOMY` | `NATIVE` | Native async operation with a result |
+| `ITEM`, `ZMENUITEMS` | `NATIVE` | Player inventory, local to this server, main thread only |
+| `LEVEL`, `EXPERIENCE` | `NATIVE` | Player state, local to this server, main thread only |
+| `VAULT` | `DELEGATED` | `withdrawPlayer` reports failure, but Vault delegates to whichever economy plugin is installed and most do a plain read-modify-write |
+| `ZESSENTIALS` | `DELEGATED` | `withdraw` returns a boolean, indivisibility is not promised |
+| `PLAYERPOINTS` | `DELEGATED` | `take` refuses when the balance is too low |
+| `VOTINGPLUGIN` | `DELEGATED` | `removePoints` reports the outcome |
+| `COINSENGINE` | `EMULATED` | Its boolean means "currency found", not "could afford" |
+| `ECOBITS` | `EMULATED` | `adjustBalance` returns nothing |
+| `BEASTTOKENS` | `EMULATED` | `removeTokens` returns nothing |
+| `ROYALEECONOMY` | `EMULATED` | `removeBalance` returns nothing |
+| `ELEMENTALTOKENS`, `ELEMENTALGEMS` | `EMULATED` | `removeTokens` / `removeGems` return nothing |
+
+If several servers share one economy database, only `NATIVE` is safe against a cross-server double
+spend. `DELEGATED` is the honest answer for Vault: it does tell you whether the withdrawal worked,
+which is strictly better than guessing, but the economy plugin behind it is usually not atomic. For
+`EMULATED` the fix has to come from the economy plugin itself.
+
+### Custom Economies
+
+`Currencies` is an enum, so it cannot be extended. To plug in your own economy, implement
+`CurrencyProvider` and register the instance:
+
+```java
+public class MyGemsProvider implements CurrencyProvider {
+    public void deposit(UUID playerId, BigDecimal amount, String reason) { /* ... */ }
+    public void withdraw(UUID playerId, BigDecimal amount, String reason) { /* ... */ }
+    public BigDecimal getBalance(UUID playerId) { /* ... */ }
+}
+
+CurrencyRegistry.register("my_gems", new MyGemsProvider());
+
+TransactionResult result = CurrencyRegistry.withdrawIfSufficient(
+        "my_gems", playerId, BigDecimal.TEN, "Shop purchase");
+```
+
+When you override `withdrawIfSufficient`, build the result with the factory that matches who made
+the level your backend can actually promise: `TransactionResult.success(amount, balance, guarantee)`
+and `insufficientFunds(amount, balance, guarantee)`, passing `Guarantee.NATIVE`, `DELEGATED` or
+`EMULATED`. `unsupported(...)` and `failed(...)` cover the rest. That is what `getGuarantee()`
+reports back to the caller, so be honest about it.
+
+To look a registered currency up, `CurrencyRegistry.require(name)` throws when there is none and
+`CurrencyRegistry.find(name)` returns null. Use `registerOrReplace(...)` to deliberately swap an
+implementation, for example on a config reload.
+
+#### Looking up either kind by name
+
+A currency name read from a config file could be a built-in constant or one of your own
+registrations, and the caller usually should not have to care. `resolve(...)` handles both:
+
+```java
+// "VAULT", "COINSENGINE", "my_gems" — all work, whichever mechanism they came from
+CurrencyProvider provider = CurrencyRegistry.resolve(nameFromConfig, null);
+
+TransactionResult result = provider.withdrawIfSufficient(playerId, amount, "Shop purchase");
+```
+
+The second argument is the currency name for a multi-currency built-in backend; pass `null` for the
+default economy, and it is ignored for a custom provider since those are registered per currency
+already. Built-in constants win when a name matches both, so a custom registration cannot silently
+shadow `VAULT`.
+
+Those three methods are all you have to write. Everything else has a default implementation, so an
+existing provider keeps working unchanged. Two optional overrides are worth knowing about:
+
+- `getWithdrawGuarantee()` and `withdrawIfSufficient(...)`: override both when your backend can
+  refuse a withdrawal itself. You get a real guarantee instead of the emulated one. Call
+  `CurrencyArgumentChecks.findProblem(playerId, amount)` first so your implementation rejects the same bad
+  inputs as every other provider.
+- `requiresMainThread()`: **defaults to `true`**, because most Bukkit APIs are not thread safe.
+  Override it to return `false` only if your backend is documented as safe for concurrent access.
+  Leaving it `true` means `withdrawIfSufficientAsync` hops back to the main thread for you.
+
+### Asynchronous Access and `CurrenciesAPI.init`
+
+Scheduling work back onto the main server thread needs a plugin instance. If you intend to use the
+asynchronous API with a main-thread-bound currency, call this once in `onEnable`:
+
+```java
+CurrenciesAPI.init(this);
+```
+
+Without it, an asynchronous call on such a currency returns a `FAILED` result explaining what is
+missing, rather than touching player state from the wrong thread.
 
 ### Example Usage
 
@@ -221,3 +395,4 @@ public class MyPlugin extends JavaPlugin {
     }
 }
 
+```
