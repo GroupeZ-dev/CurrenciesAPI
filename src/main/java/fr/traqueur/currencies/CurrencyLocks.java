@@ -6,8 +6,9 @@ import java.util.concurrent.locks.ReentrantLock;
 
 final class CurrencyLocks {
 
-    private static final int STRIPES = 64;
+    private static final int STRIPES = 1024;
     private static final long LOCK_TIMEOUT_MILLIS = 250L;
+    private static final long MAIN_THREAD_LOCK_TIMEOUT_MILLIS = 25L;
     private static final ReentrantLock[] LOCKS = new ReentrantLock[STRIPES];
 
     static {
@@ -39,8 +40,9 @@ final class CurrencyLocks {
      * @return True when the lock was acquired and must be released by the caller.
      */
     static boolean tryLock(ReentrantLock lock) {
+        long timeout = CurrenciesAPI.isMainThread() ? MAIN_THREAD_LOCK_TIMEOUT_MILLIS : LOCK_TIMEOUT_MILLIS;
         try {
-            return lock.tryLock(LOCK_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);
+            return lock.tryLock(timeout, TimeUnit.MILLISECONDS);
         } catch (InterruptedException exception) {
             Thread.currentThread().interrupt();
             return false;
