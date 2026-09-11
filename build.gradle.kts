@@ -64,6 +64,16 @@ dependencies {
     compileOnly(files("libs/CoinsEngine-2.4.2.jar"))
     compileOnly(files("libs/nightcore-2.7.1.jar"))
     compileOnly(files("libs/RoyaleEconomyAPI.jar"))
+
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.2")
+    testImplementation("org.junit.jupiter:junit-jupiter-params:5.8.2")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.8.2")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.8.2")
+    testCompileOnly("org.spigotmc:spigot-api:1.21.1-R0.1-SNAPSHOT")
+}
+
+tasks.test {
+    useJUnitPlatform()
 }
 
 val targetJavaVersion = 8
