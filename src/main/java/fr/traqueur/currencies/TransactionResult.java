@@ -62,7 +62,8 @@ public final class TransactionResult {
      * @param guarantee How strong the promise behind the operation is.
      * @return The result.
      */
-    public static TransactionResult success(BigDecimal amount, BigDecimal balance, Guarantee guarantee) {
+    @NotNull
+    public static TransactionResult success(@Nullable BigDecimal amount, @Nullable BigDecimal balance, @NotNull Guarantee guarantee) {
         return new TransactionResult(Status.SUCCESS, amount, balance, null, guarantee);
     }
 
@@ -74,7 +75,8 @@ public final class TransactionResult {
      * @param guarantee How strong the promise behind the check is.
      * @return The result.
      */
-    public static TransactionResult insufficientFunds(BigDecimal amount, BigDecimal balance, Guarantee guarantee) {
+    @NotNull
+    public static TransactionResult insufficientFunds(@Nullable BigDecimal amount, @Nullable BigDecimal balance, @NotNull Guarantee guarantee) {
         return new TransactionResult(Status.INSUFFICIENT_FUNDS, amount, balance, null, guarantee);
     }
 
@@ -85,7 +87,8 @@ public final class TransactionResult {
      * @param errorMessage A human readable explanation.
      * @return The result.
      */
-    public static TransactionResult unsupported(BigDecimal amount, String errorMessage) {
+    @NotNull
+    public static TransactionResult unsupported(@Nullable BigDecimal amount, @Nullable String errorMessage) {
         return new TransactionResult(Status.UNSUPPORTED, amount, null, errorMessage, Guarantee.EMULATED);
     }
 
@@ -96,7 +99,8 @@ public final class TransactionResult {
      * @param errorMessage A human readable explanation.
      * @return The result.
      */
-    public static TransactionResult failed(BigDecimal amount, String errorMessage) {
+    @NotNull
+    public static TransactionResult failed(@Nullable BigDecimal amount, @Nullable String errorMessage) {
         return new TransactionResult(Status.FAILED, amount, null, errorMessage, Guarantee.EMULATED);
     }
 
@@ -150,6 +154,7 @@ public final class TransactionResult {
     }
 
     @Override
+    @NotNull
     public String toString() {
         return "TransactionResult{status=" + this.status
                 + ", amount=" + this.amount

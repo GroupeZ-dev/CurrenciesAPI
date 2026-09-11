@@ -46,9 +46,7 @@ public final class CurrencyRegistry {
      * @throws IllegalArgumentException  if the name or the provider is null or the name is blank.
      * @throws IllegalStateException     if a different provider is already registered under this name.
      */
-    public static void register(String name, CurrencyProvider provider) {
-        // Provider checked before the name, so register(null, null) reports the provider rather
-        // than blaming the name.
+    public static void register(@NotNull String name, @NotNull CurrencyProvider provider) {
         if (provider == null) {
             throw new IllegalArgumentException("The provider cannot be null.");
         }
@@ -67,7 +65,8 @@ public final class CurrencyRegistry {
      * @param provider The provider instance.
      * @return The provider that was previously registered, or null.
      */
-    public static CurrencyProvider registerOrReplace(String name, CurrencyProvider provider) {
+    @Nullable
+    public static CurrencyProvider registerOrReplace(@NotNull String name, @NotNull CurrencyProvider provider) {
         if (provider == null) {
             throw new IllegalArgumentException("The provider cannot be null.");
         }
@@ -80,7 +79,8 @@ public final class CurrencyRegistry {
      * @param name The name it was registered under.
      * @return The removed provider, or null when nothing was registered.
      */
-    public static CurrencyProvider unregister(String name) {
+    @Nullable
+    public static CurrencyProvider unregister(@NotNull String name) {
         return PROVIDERS.remove(normalize(name));
     }
 
@@ -92,7 +92,7 @@ public final class CurrencyRegistry {
      * @throws IllegalStateException if nothing is registered under this name.
      */
     @NotNull
-    public static CurrencyProvider require(String name) {
+    public static CurrencyProvider require(@NotNull String name) {
         CurrencyProvider provider = find(name);
         if (provider == null) {
             throw new IllegalStateException("No custom currency is registered under the name " + name
@@ -108,7 +108,7 @@ public final class CurrencyRegistry {
      * @return The provider, or null.
      */
     @Nullable
-    public static CurrencyProvider find(String name) {
+    public static CurrencyProvider find(@NotNull String name) {
         return PROVIDERS.get(normalize(name));
     }
 
@@ -116,7 +116,7 @@ public final class CurrencyRegistry {
      * @param name The name to look up.
      * @return True when a provider is registered under this name.
      */
-    public static boolean isRegistered(String name) {
+    public static boolean isRegistered(@Nullable String name) {
         return name != null && PROVIDERS.containsKey(normalize(name));
     }
 
@@ -143,7 +143,8 @@ public final class CurrencyRegistry {
      * @return The outcome. Nothing is debited unless the status is
      * {@link TransactionResult.Status#SUCCESS}.
      */
-    public static TransactionResult withdrawIfSufficient(String name, UUID playerId, BigDecimal amount, String reason) {
+    @NotNull
+    public static TransactionResult withdrawIfSufficient(@NotNull String name, @NotNull UUID playerId, @NotNull BigDecimal amount, @Nullable String reason) {
         return require(name).withdrawIfSufficient(playerId, amount, reason);
     }
 
@@ -156,7 +157,8 @@ public final class CurrencyRegistry {
      * @param reason   The reason of the withdrawal.
      * @return A future completed with the outcome.
      */
-    public static CompletableFuture<TransactionResult> withdrawIfSufficientAsync(String name, UUID playerId, BigDecimal amount, String reason) {
+    @NotNull
+    public static CompletableFuture<TransactionResult> withdrawIfSufficientAsync(@NotNull String name, @NotNull UUID playerId, @NotNull BigDecimal amount, @Nullable String reason) {
         return require(name).withdrawIfSufficientAsync(playerId, amount, reason);
     }
 
@@ -179,7 +181,7 @@ public final class CurrencyRegistry {
      * @throws IllegalStateException if the name matches neither.
      */
     @NotNull
-    public static CurrencyProvider resolve(String name, String currencyName) {
+    public static CurrencyProvider resolve(@NotNull String name, @Nullable String currencyName) {
         if (name != null) {
             try {
                 Currencies currency = Currencies.fromName(name.trim().toUpperCase(java.util.Locale.ROOT));

@@ -3,6 +3,7 @@ package fr.traqueur.currencies;
 import fr.traqueur.currencies.providers.*;
 import org.bukkit.Bukkit;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Constructor;
 import java.math.BigDecimal;
@@ -293,7 +294,8 @@ public enum Currencies {
      * @return The outcome. Nothing is debited unless the status is
      * {@link TransactionResult.Status#SUCCESS}.
      */
-    public TransactionResult withdrawIfSufficient(UUID playerId, BigDecimal amount, String reason) {
+    @NotNull
+    public TransactionResult withdrawIfSufficient(@NotNull UUID playerId, @NotNull BigDecimal amount, @Nullable String reason) {
         return this.withdrawIfSufficient(playerId, amount, DEFAULT_CURRENCY_NAME, reason);
     }
 
@@ -307,7 +309,8 @@ public enum Currencies {
      * @return The outcome. Nothing is debited unless the status is
      * {@link TransactionResult.Status#SUCCESS}.
      */
-    public TransactionResult withdrawIfSufficient(UUID playerId, BigDecimal amount, String currencyName, String reason) {
+    @NotNull
+    public TransactionResult withdrawIfSufficient(@NotNull UUID playerId, @NotNull BigDecimal amount, @NotNull String currencyName, @Nullable String reason) {
         this.canBeUse(currencyName);
         return this.providers.get(currencyName).withdrawIfSufficient(playerId, amount, reason);
     }
@@ -321,7 +324,8 @@ public enum Currencies {
      * @param reason       The reason of the withdrawal.
      * @return A future completed with the outcome.
      */
-    public CompletableFuture<TransactionResult> withdrawIfSufficientAsync(UUID playerId, BigDecimal amount, String currencyName, String reason) {
+    @NotNull
+    public CompletableFuture<TransactionResult> withdrawIfSufficientAsync(@NotNull UUID playerId, @NotNull BigDecimal amount, @NotNull String currencyName, @Nullable String reason) {
         this.canBeUse(currencyName);
         return this.providers.get(currencyName).withdrawIfSufficientAsync(playerId, amount, reason);
     }
@@ -337,12 +341,13 @@ public enum Currencies {
      * @return The provider.
      */
     @NotNull
-    public CurrencyProvider getProvider(String currencyName) {
+    public CurrencyProvider getProvider(@NotNull String currencyName) {
         this.canBeUse(currencyName);
         return this.providers.get(currencyName);
     }
 
-    public Guarantee getWithdrawGuarantee(String currencyName) {
+    @NotNull
+    public Guarantee getWithdrawGuarantee(@NotNull String currencyName) {
         this.canBeUse(currencyName);
         return this.providers.get(currencyName).getWithdrawGuarantee();
     }

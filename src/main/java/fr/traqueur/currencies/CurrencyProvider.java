@@ -1,6 +1,8 @@
 package fr.traqueur.currencies;
 
 import org.bukkit.Bukkit;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.math.BigDecimal;
 import java.util.UUID;
@@ -53,6 +55,7 @@ public interface CurrencyProvider {
      *
      * @return The level of guarantee behind a conditional withdrawal.
      */
+    @NotNull
     default Guarantee getWithdrawGuarantee() {
         return Guarantee.EMULATED;
     }
@@ -94,7 +97,8 @@ public interface CurrencyProvider {
      * @return The outcome. Nothing is debited unless the status is
      * {@link TransactionResult.Status#SUCCESS}.
      */
-    default TransactionResult withdrawIfSufficient(UUID playerId, BigDecimal amount, String reason) {
+    @NotNull
+    default TransactionResult withdrawIfSufficient(@NotNull UUID playerId, @NotNull BigDecimal amount, @Nullable String reason) {
         TransactionResult invalid = CurrencyArgumentChecks.findProblem(playerId, amount);
         if (invalid != null) {
             return invalid;
@@ -138,7 +142,8 @@ public interface CurrencyProvider {
      * @return A future completed with the outcome. The future itself never completes
      * exceptionally, failures are reported through the result.
      */
-    default CompletableFuture<TransactionResult> withdrawIfSufficientAsync(UUID playerId, BigDecimal amount, String reason) {
+    @NotNull
+    default CompletableFuture<TransactionResult> withdrawIfSufficientAsync(@NotNull UUID playerId, @NotNull BigDecimal amount, @Nullable String reason) {
         TransactionResult invalid = CurrencyArgumentChecks.findProblem(playerId, amount);
         if (invalid != null) {
             return CompletableFuture.completedFuture(invalid);

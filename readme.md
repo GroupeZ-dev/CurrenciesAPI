@@ -136,6 +136,26 @@ Currencies.ZESSENTIALS.getBalance(player, "coins");
 
 ```
 
+#### The default economy
+
+Every method that takes a currency name has an overload that does not. Those overloads use the
+currency named `"default"`, which is why `"default"` shows up in the examples further down:
+
+```java
+// These two are the same call
+Currencies.VAULT.getBalance(playerId);
+Currencies.VAULT.getBalance(playerId, "default");
+
+// And so are these
+Currencies.VAULT.withdrawIfSufficient(playerId, amount, "Shop purchase");
+Currencies.VAULT.withdrawIfSufficient(playerId, amount, "default", "Shop purchase");
+```
+
+For a single-currency backend such as Vault there is nothing else to know: everything lives under
+`"default"` and the short overloads are all you need. For a multi-currency backend the name selects
+which currency you mean, and the short overloads would look for one actually called `"default"`, so
+pass the name explicitly.
+
 ### Safe Purchases: `withdrawIfSufficient`
 
 `withdraw` does **not** check whether the player can afford the amount. Most backends will happily
@@ -249,6 +269,23 @@ reports back to the caller, so be honest about it.
 To look a registered currency up, `CurrencyRegistry.require(name)` throws when there is none and
 `CurrencyRegistry.find(name)` returns null. Use `registerOrReplace(...)` to deliberately swap an
 implementation, for example on a config reload.
+
+#### Looking up either kind by name
+
+A currency name read from a config file could be a built-in constant or one of your own
+registrations, and the caller usually should not have to care. `resolve(...)` handles both:
+
+```java
+// "VAULT", "COINSENGINE", "my_gems" — all work, whichever mechanism they came from
+CurrencyProvider provider = CurrencyRegistry.resolve(nameFromConfig, null);
+
+TransactionResult result = provider.withdrawIfSufficient(playerId, amount, "Shop purchase");
+```
+
+The second argument is the currency name for a multi-currency built-in backend; pass `null` for the
+default economy, and it is ignored for a custom provider since those are registered per currency
+already. Built-in constants win when a name matches both, so a custom registration cannot silently
+shadow `VAULT`.
 
 Those three methods are all you have to write. Everything else has a default implementation, so an
 existing provider keeps working unchanged. Two optional overrides are worth knowing about:

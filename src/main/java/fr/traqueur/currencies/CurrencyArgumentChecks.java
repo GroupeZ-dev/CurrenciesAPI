@@ -1,5 +1,7 @@
 package fr.traqueur.currencies;
 
+import org.jetbrains.annotations.Nullable;
+
 import java.math.BigDecimal;
 import java.util.UUID;
 
@@ -23,7 +25,8 @@ public final class CurrencyArgumentChecks {
      * @param amount   The requested amount.
      * @return A result describing the problem, or null when the arguments are usable.
      */
-    public static TransactionResult findProblem(UUID playerId, BigDecimal amount) {
+    @Nullable
+    public static TransactionResult findProblem(@Nullable UUID playerId, @Nullable BigDecimal amount) {
         if (playerId == null) {
             return TransactionResult.failed(amount, "The player UUID cannot be null.");
         }

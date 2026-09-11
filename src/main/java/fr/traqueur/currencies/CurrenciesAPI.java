@@ -1,5 +1,8 @@
 package fr.traqueur.currencies;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 
@@ -15,7 +18,7 @@ public final class CurrenciesAPI {
      *
      * @param owningPlugin The plugin instance, must not be null.
      */
-    public static void init(Plugin owningPlugin) {
+    public static void init(@NotNull Plugin owningPlugin) {
         if (owningPlugin == null) {
             throw new IllegalArgumentException("The plugin instance cannot be null.");
         }
@@ -28,6 +31,7 @@ public final class CurrenciesAPI {
     /**
      * @return The registered plugin instance, or null when {@link #init(Plugin)} was never called.
      */
+    @Nullable
     public static Plugin getPlugin() {
         return plugin;
     }
