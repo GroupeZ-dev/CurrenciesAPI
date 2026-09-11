@@ -2,6 +2,7 @@ package fr.traqueur.currencies;
 
 import fr.traqueur.currencies.providers.*;
 import org.bukkit.Bukkit;
+import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Constructor;
 import java.math.BigDecimal;
@@ -93,7 +94,7 @@ public enum Currencies {
     EXCELLENTEECONOMY("ExcellentEconomy", ExcellentEconomyProvider.class, true, true, EXCELLENTECONOMY)
     ;
 
-    private final static String DEFAULT_CURRENCY_NAME = "default";
+    final static String DEFAULT_CURRENCY_NAME = "default";
     private final static String DEFAULT_REASON = "No reason";
 
     static {
@@ -326,18 +327,24 @@ public enum Currencies {
     }
 
     /**
-     * Whether this currency can check the balance and apply the debit as one indivisible
-     * operation, rather than having the library emulate it.
+     * Returns the provider backing this currency, creating it if necessary.
      *
-     * <p>Worth checking on a network where several servers share one economy: an emulated
-     * operation is only protected against races inside this server.</p>
+     * <p>Useful for inspecting a provider's capabilities, and the point
+     * {@link CurrencyRegistry#resolve(String, String)} bridges to so that a built-in currency and a
+     * custom one can be looked up the same way.</p>
      *
      * @param currencyName The name of the currency.
-     * @return True when the backend itself guarantees the operation.
+     * @return The provider.
      */
-    public boolean hasNativeConditionalWithdraw(String currencyName) {
+    @NotNull
+    public CurrencyProvider getProvider(String currencyName) {
         this.canBeUse(currencyName);
-        return this.providers.get(currencyName).hasNativeConditionalWithdraw();
+        return this.providers.get(currencyName);
+    }
+
+    public Guarantee getWithdrawGuarantee(String currencyName) {
+        this.canBeUse(currencyName);
+        return this.providers.get(currencyName).getWithdrawGuarantee();
     }
 
     private void canBeUse(String currencyName) {

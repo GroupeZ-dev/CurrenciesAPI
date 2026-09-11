@@ -4,6 +4,7 @@ import dev.unnm3d.rediseconomy.api.RedisEconomyAPI;
 import dev.unnm3d.rediseconomy.currency.Currency;
 import fr.traqueur.currencies.CurrencyArgumentChecks;
 import fr.traqueur.currencies.CurrencyProvider;
+import fr.traqueur.currencies.Guarantee;
 import fr.traqueur.currencies.TransactionResult;
 import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.Bukkit;
@@ -62,8 +63,8 @@ public class RedisEconomyProvider implements CurrencyProvider {
     }
 
     @Override
-    public boolean hasNativeConditionalWithdraw() {
-        return true;
+    public Guarantee getWithdrawGuarantee() {
+        return Guarantee.NATIVE;
     }
 
     @Override
@@ -86,7 +87,7 @@ public class RedisEconomyProvider implements CurrencyProvider {
             }
 
             if (response.type == EconomyResponse.ResponseType.SUCCESS) {
-                return TransactionResult.nativeSuccess(amount, BigDecimal.valueOf(response.balance));
+                return TransactionResult.success(amount, BigDecimal.valueOf(response.balance), Guarantee.NATIVE);
             }
 
             if (response.type == EconomyResponse.ResponseType.NOT_IMPLEMENTED) {
@@ -94,7 +95,7 @@ public class RedisEconomyProvider implements CurrencyProvider {
             }
 
             if (!currency.has(playerId, amount.doubleValue())) {
-                return TransactionResult.nativeInsufficientFunds(amount, BigDecimal.valueOf(currency.getBalance(playerId)));
+                return TransactionResult.insufficientFunds(amount, BigDecimal.valueOf(currency.getBalance(playerId)), Guarantee.NATIVE);
             }
 
             return TransactionResult.failed(amount, response.errorMessage == null

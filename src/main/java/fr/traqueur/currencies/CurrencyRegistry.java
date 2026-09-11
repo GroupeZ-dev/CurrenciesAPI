@@ -27,7 +27,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * <p>A custom provider only has to implement {@code deposit}, {@code withdraw} and
  * {@code getBalance}. It inherits an emulated {@link CurrencyProvider#withdrawIfSufficient} which
  * is serialized inside this JVM. If the backend can refuse a withdrawal itself, override
- * {@code withdrawIfSufficient} and {@code hasNativeConditionalWithdraw} to get a real guarantee. If the
+ * {@code withdrawIfSufficient} and {@code getWithdrawGuarantee} to report a real guarantee. If the
  * backend is safe to use off the main server thread, also override
  * {@link CurrencyProvider#requiresMainThread()} to return false.</p>
  */
@@ -47,10 +47,12 @@ public final class CurrencyRegistry {
      * @throws IllegalStateException     if a different provider is already registered under this name.
      */
     public static void register(String name, CurrencyProvider provider) {
-        String key = normalize(name);
+        // Provider checked before the name, so register(null, null) reports the provider rather
+        // than blaming the name.
         if (provider == null) {
             throw new IllegalArgumentException("The provider cannot be null.");
         }
+        String key = normalize(name);
 
         CurrencyProvider existing = PROVIDERS.putIfAbsent(key, provider);
         if (existing != null && existing != provider) {
@@ -66,11 +68,10 @@ public final class CurrencyRegistry {
      * @return The provider that was previously registered, or null.
      */
     public static CurrencyProvider registerOrReplace(String name, CurrencyProvider provider) {
-        String key = normalize(name);
         if (provider == null) {
             throw new IllegalArgumentException("The provider cannot be null.");
         }
-        return PROVIDERS.put(key, provider);
+        return PROVIDERS.put(normalize(name), provider);
     }
 
     /**
@@ -120,7 +121,12 @@ public final class CurrencyRegistry {
     }
 
     /**
-     * @return The names of every registered custom currency. The returned set is a snapshot.
+     * The names of every registered custom currency.
+     *
+     * <p>The names come back <b>normalized</b>, trimmed and lower cased, because that is the form
+     * lookups use. Registering {@code "MyGems"} and reading this back gives {@code "mygems"}.</p>
+     *
+     * @return A snapshot of the registered names, in their normalized form.
      */
     @NotNull
     public static Set<String> getRegisteredNames() {
@@ -152,6 +158,42 @@ public final class CurrencyRegistry {
      */
     public static CompletableFuture<TransactionResult> withdrawIfSufficientAsync(String name, UUID playerId, BigDecimal amount, String reason) {
         return require(name).withdrawIfSufficientAsync(playerId, amount, reason);
+    }
+
+    /**
+     * Resolves a currency by name, whether it is one of the built in {@link Currencies} constants
+     * or a custom provider registered here.
+     *
+     * <p>This is the bridge between the two. Without it a caller holding a currency name from a
+     * configuration file would have to know in advance which of the two mechanisms it belongs to,
+     * and there would be two unrelated ways to do the same thing.</p>
+     *
+     * <p>The built in constants win when a name matches both, so a custom registration cannot
+     * silently shadow {@code VAULT}. Note that a built in currency also needs a currency name for
+     * the economies that support several, which is why {@code currencyName} is separate: it is
+     * ignored for a custom provider, which is registered per currency already.</p>
+     *
+     * @param name         The currency name, either a {@link Currencies} constant or a registered custom name.
+     * @param currencyName The sub currency for a built in provider, or null for the default one.
+     * @return The provider backing that name.
+     * @throws IllegalStateException if the name matches neither.
+     */
+    @NotNull
+    public static CurrencyProvider resolve(String name, String currencyName) {
+        if (name != null) {
+            try {
+                Currencies currency = Currencies.fromName(name.trim().toUpperCase(java.util.Locale.ROOT));
+                return currency.getProvider(currencyName == null ? Currencies.DEFAULT_CURRENCY_NAME : currencyName);
+            } catch (IllegalArgumentException ignored) {
+            }
+        }
+
+        CurrencyProvider provider = find(name);
+        if (provider == null) {
+            throw new IllegalStateException("No currency named " + name + " is known, either as a built in "
+                    + "Currencies constant or as a provider registered with CurrencyRegistry.register(name, provider).");
+        }
+        return provider;
     }
 
     private static String normalize(String name) {

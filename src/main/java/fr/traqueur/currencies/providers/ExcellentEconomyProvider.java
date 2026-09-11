@@ -2,6 +2,7 @@ package fr.traqueur.currencies.providers;
 
 import fr.traqueur.currencies.CurrencyArgumentChecks;
 import fr.traqueur.currencies.CurrencyProvider;
+import fr.traqueur.currencies.Guarantee;
 import fr.traqueur.currencies.TransactionResult;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -59,9 +60,18 @@ public class ExcellentEconomyProvider implements CurrencyProvider {
         return BigDecimal.valueOf(raw);
     }
 
+    private BigDecimal getBalanceWithoutBukkit(UUID playerId) {
+        try {
+            Double raw = this.api.getBalanceAsync(playerId, this.currencyName).join();
+            return raw == null ? null : BigDecimal.valueOf(raw);
+        } catch (Exception exception) {
+            return null;
+        }
+    }
+
     @Override
-    public boolean hasNativeConditionalWithdraw() {
-        return true;
+    public Guarantee getWithdrawGuarantee() {
+        return Guarantee.NATIVE;
     }
 
     @Override
@@ -73,20 +83,20 @@ public class ExcellentEconomyProvider implements CurrencyProvider {
 
         try {
             OperationContext ctx = OperationContext.custom(reason);
-            Player player = Bukkit.getPlayer(playerId);
 
-            boolean success;
-            if (player != null) {
-                success = this.api.withdraw(player, this.currencyName, amount.doubleValue(), ctx);
-            } else {
-                OperationResult result = this.api.withdrawAsync(playerId, this.currencyName, amount.doubleValue(), ctx).join();
-                success = result != null && result.success();
+            OperationResult result = this.api.withdrawAsync(playerId, this.currencyName, amount.doubleValue(), ctx).join();
+
+            if (result != null && result.success()) {
+                return TransactionResult.success(amount, null, Guarantee.NATIVE);
             }
 
-            if (success) {
-                return TransactionResult.nativeSuccess(amount, this.getBalance(playerId));
+            BigDecimal balance = this.getBalanceWithoutBukkit(playerId);
+            if (balance != null && balance.compareTo(amount) < 0) {
+                return TransactionResult.insufficientFunds(amount, balance, Guarantee.NATIVE);
             }
-            return TransactionResult.nativeInsufficientFunds(amount, this.getBalance(playerId));
+
+            return TransactionResult.failed(amount, "ExcellentEconomy refused the withdrawal and the player could afford it, "
+                    + "so the currency " + this.currencyName + " may be unknown or the player data may not be loaded.");
         } catch (Exception exception) {
             return TransactionResult.failed(amount, "ExcellentEconomy threw while withdrawing: " + exception.getMessage());
         }
@@ -107,9 +117,14 @@ public class ExcellentEconomyProvider implements CurrencyProvider {
                             return TransactionResult.failed(amount, "ExcellentEconomy threw while withdrawing: " + throwable.getMessage());
                         }
                         if (result != null && result.success()) {
-                            return TransactionResult.nativeSuccess(amount, null);
+                            return TransactionResult.success(amount, null, Guarantee.NATIVE);
                         }
-                        return TransactionResult.nativeInsufficientFunds(amount, null);
+                        BigDecimal balance = this.getBalanceWithoutBukkit(playerId);
+                        if (balance != null && balance.compareTo(amount) < 0) {
+                            return TransactionResult.insufficientFunds(amount, balance, Guarantee.NATIVE);
+                        }
+                        return TransactionResult.failed(amount, "ExcellentEconomy refused the withdrawal and the player could afford it, "
+                                + "so the currency " + this.currencyName + " may be unknown or the player data may not be loaded.");
                     });
         } catch (Exception exception) {
             return CompletableFuture.completedFuture(

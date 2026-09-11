@@ -2,9 +2,9 @@ package fr.traqueur.currencies.providers;
 
 import fr.traqueur.currencies.CurrencyArgumentChecks;
 import fr.traqueur.currencies.CurrencyProvider;
+import fr.traqueur.currencies.Guarantee;
 import fr.traqueur.currencies.TransactionResult;
 import org.bukkit.Bukkit;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
 import java.math.BigDecimal;
@@ -80,8 +80,8 @@ public class ExperienceProvider implements CurrencyProvider {
     }
 
     @Override
-    public boolean hasNativeConditionalWithdraw() {
-        return true;
+    public Guarantee getWithdrawGuarantee() {
+        return Guarantee.NATIVE;
     }
 
     @Override
@@ -96,13 +96,17 @@ public class ExperienceProvider implements CurrencyProvider {
             return TransactionResult.failed(amount, "Experience can only be taken from an online player.");
         }
 
+        if (amount.stripTrailingZeros().scale() > 0) {
+            return TransactionResult.failed(amount, "Experience only supports whole amounts, got " + amount + ".");
+        }
+
         BigDecimal current = BigDecimal.valueOf(this.getTotalExperience(player));
         if (current.compareTo(amount) < 0) {
-            return TransactionResult.nativeInsufficientFunds(amount, current);
+            return TransactionResult.insufficientFunds(amount, current, Guarantee.NATIVE);
         }
 
         BigDecimal remaining = current.subtract(amount);
         this.setTotalExperience(player, remaining.intValue());
-        return TransactionResult.nativeSuccess(amount, remaining);
+        return TransactionResult.success(amount, remaining, Guarantee.NATIVE);
     }
 }

@@ -41,17 +41,21 @@ public interface CurrencyProvider {
     BigDecimal getBalance(UUID playerId);
 
     /**
-     * Whether this provider can check the balance and apply the debit as one indivisible
-     * operation.
+     * How strong a promise this provider can make about {@link #withdrawIfSufficient}.
      *
-     * <p>When this returns false, {@link #withdrawIfSufficient} still works but is emulated by
-     * the library: the sequence is serialized inside this JVM, which stops one server racing
-     * itself, but it cannot stop a second server acting on the same shared economy.</p>
+     * <p>Every provider supports the operation, this only says who guarantee it. The default is
+     * {@link Guarantee#EMULATED}, meaning the library performs the check and the debit itself under
+     * a lock, which stops one server racing itself but cannot stop a second server acting on the
+     * same shared economy.</p>
      *
-     * @return True when the backend itself guarantees the operation.
+     * <p>Override with {@link Guarantee#DELEGATED} when the backend reports the outcome of the
+     * withdrawal but does not promise the check and the debit were indivisible, and with
+     * {@link Guarantee#NATIVE} only when it validates inside storage that every server shares.</p>
+     *
+     * @return The level of guarantee behind a conditional withdrawal.
      */
-    default boolean hasNativeConditionalWithdraw() {
-        return false;
+    default Guarantee getWithdrawGuarantee() {
+        return Guarantee.EMULATED;
     }
 
     /**
@@ -82,7 +86,8 @@ public interface CurrencyProvider {
      * <p>The default implementation emulates the operation by reading the balance and then
      * withdrawing, with the whole sequence held under a lock so that two threads cannot both
      * observe the same balance and both debit. The returned result reports
-     * {@link TransactionResult#isBackendGuaranteed()} as false to make that limitation visible.</p>
+     * {@link TransactionResult#getGuarantee()} as {@link Guarantee#EMULATED} to make that limitation
+     * visible.</p>
      *
      * @param playerId The UUID of the player to debit.
      * @param amount   The amount to debit, must be strictly positive.
@@ -98,7 +103,7 @@ public interface CurrencyProvider {
 
         ReentrantLock lock = CurrencyLocks.lockFor(this, playerId);
         if (!CurrencyLocks.tryLock(lock)) {
-            return TransactionResult.failed(amount, "Timed out waiting for a concurrent operation on the same balance.");
+            return TransactionResult.failed(amount, "Timed out waiting for the currency lock, nothing was taken.");
         }
 
         try {
@@ -108,11 +113,11 @@ public interface CurrencyProvider {
             }
 
             if (balance.compareTo(amount) < 0) {
-                return TransactionResult.emulatedInsufficientFunds(amount, balance);
+                return TransactionResult.insufficientFunds(amount, balance, Guarantee.EMULATED);
             }
 
             this.withdraw(playerId, amount, reason);
-            return TransactionResult.emulatedSuccess(amount, balance.subtract(amount));
+            return TransactionResult.success(amount, balance.subtract(amount), Guarantee.EMULATED);
         } catch (Exception exception) {
             return TransactionResult.failed(amount, "The backend threw while withdrawing: " + exception.getMessage());
         } finally {
@@ -140,7 +145,7 @@ public interface CurrencyProvider {
         }
 
         if (!this.requiresMainThread()) {
-            return CompletableFuture.supplyAsync(() -> CurrencyProvider.this.withdrawIfSufficient(playerId, amount, reason));
+            return CompletableFuture.supplyAsync(() -> CurrencyProvider.this.withdrawIfSufficient(playerId, amount, reason), CurrencyExecutor.get());
         }
 
         if (CurrenciesAPI.isMainThread()) {

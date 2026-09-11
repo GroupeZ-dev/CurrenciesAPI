@@ -2,6 +2,7 @@ package fr.traqueur.currencies.providers;
 
 import fr.traqueur.currencies.CurrencyArgumentChecks;
 import fr.traqueur.currencies.CurrencyProvider;
+import fr.traqueur.currencies.Guarantee;
 import fr.traqueur.currencies.TransactionResult;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.economy.EconomyResponse;
@@ -48,8 +49,8 @@ public class VaultProvider implements CurrencyProvider {
     }
 
     @Override
-    public boolean hasNativeConditionalWithdraw() {
-        return true;
+    public Guarantee getWithdrawGuarantee() {
+        return Guarantee.DELEGATED;
     }
 
     @Override
@@ -69,7 +70,7 @@ public class VaultProvider implements CurrencyProvider {
             }
 
             if (response.type == EconomyResponse.ResponseType.SUCCESS) {
-                return TransactionResult.nativeSuccess(amount, BigDecimal.valueOf(response.balance));
+                return TransactionResult.success(amount, BigDecimal.valueOf(response.balance), Guarantee.DELEGATED);
             }
 
             if (response.type == EconomyResponse.ResponseType.NOT_IMPLEMENTED) {
@@ -78,7 +79,7 @@ public class VaultProvider implements CurrencyProvider {
 
             BigDecimal balance = BigDecimal.valueOf(vaultEconomy.getBalance(offlinePlayer));
             if (balance.compareTo(amount) < 0) {
-                return TransactionResult.nativeInsufficientFunds(amount, balance);
+                return TransactionResult.insufficientFunds(amount, balance, Guarantee.DELEGATED);
             }
 
             return TransactionResult.failed(amount, response.errorMessage == null

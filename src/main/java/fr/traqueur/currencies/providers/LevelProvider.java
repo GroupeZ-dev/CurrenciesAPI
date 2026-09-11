@@ -2,6 +2,7 @@ package fr.traqueur.currencies.providers;
 
 import fr.traqueur.currencies.CurrencyArgumentChecks;
 import fr.traqueur.currencies.CurrencyProvider;
+import fr.traqueur.currencies.Guarantee;
 import fr.traqueur.currencies.TransactionResult;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -36,8 +37,8 @@ public class LevelProvider implements CurrencyProvider {
     }
 
     @Override
-    public boolean hasNativeConditionalWithdraw() {
-        return true;
+    public Guarantee getWithdrawGuarantee() {
+        return Guarantee.NATIVE;
     }
 
     @Override
@@ -65,10 +66,10 @@ public class LevelProvider implements CurrencyProvider {
 
         int current = player.getLevel();
         if (current < cost) {
-            return TransactionResult.nativeInsufficientFunds(amount, BigDecimal.valueOf(current));
+            return TransactionResult.insufficientFunds(amount, BigDecimal.valueOf(current), Guarantee.NATIVE);
         }
 
         player.setLevel(current - cost);
-        return TransactionResult.nativeSuccess(amount, BigDecimal.valueOf(current - cost));
+        return TransactionResult.success(amount, BigDecimal.valueOf(current - cost), Guarantee.NATIVE);
     }
 }

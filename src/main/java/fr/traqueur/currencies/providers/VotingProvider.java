@@ -5,6 +5,7 @@ import com.bencodez.votingplugin.user.UserManager;
 import com.bencodez.votingplugin.user.VotingPluginUser;
 import fr.traqueur.currencies.CurrencyArgumentChecks;
 import fr.traqueur.currencies.CurrencyProvider;
+import fr.traqueur.currencies.Guarantee;
 import fr.traqueur.currencies.TransactionResult;
 
 import java.math.BigDecimal;
@@ -30,8 +31,8 @@ public class VotingProvider implements CurrencyProvider {
     }
 
     @Override
-    public boolean hasNativeConditionalWithdraw() {
-        return true;
+    public Guarantee getWithdrawGuarantee() {
+        return Guarantee.DELEGATED;
     }
 
     @Override
@@ -48,9 +49,9 @@ public class VotingProvider implements CurrencyProvider {
 
             VotingPluginUser user = this.userManager.getVotingPluginUser(playerId);
             if (user.removePoints(amount.intValueExact())) {
-                return TransactionResult.nativeSuccess(amount, BigDecimal.valueOf(user.getPoints()));
+                return TransactionResult.success(amount, BigDecimal.valueOf(user.getPoints()), Guarantee.DELEGATED);
             }
-            return TransactionResult.nativeInsufficientFunds(amount, BigDecimal.valueOf(user.getPoints()));
+            return TransactionResult.insufficientFunds(amount, BigDecimal.valueOf(user.getPoints()), Guarantee.DELEGATED);
         } catch (ArithmeticException exception) {
             return TransactionResult.failed(amount, "The amount does not fit in a VotingPlugin integer: " + amount + ".");
         } catch (Exception exception) {

@@ -167,8 +167,10 @@ switch (result.getStatus()) {
 }
 ```
 
-**Nothing is ever debited unless the status is `SUCCESS`.** That is the only case where you should
-hand out the goods.
+**Only hand out the goods on `SUCCESS`.** `INSUFFICIENT_FUNDS` and `UNSUPPORTED` never debit
+anything. `FAILED` normally does not either, but it cannot promise it: a backend that throws after
+it has already applied the withdrawal is indistinguishable from one that failed cleanly, so treat
+`FAILED` as "no goods, and worth logging" rather than as proof the balance is untouched.
 
 An asynchronous variant is available and never completes exceptionally, failures come back through
 the result:
@@ -178,41 +180,47 @@ Currencies.VAULT.withdrawIfSufficientAsync(playerId, amount, "default", "Shop pu
         .thenAccept(result -> { /* ... */ });
 ```
 
-### Atomicity Per Backend
+### Guarantee Per Backend
 
-Some backends can refuse a withdrawal themselves, others cannot. When a backend cannot, the library
-emulates the operation by locking around a balance read and a withdraw. That stops one server racing
-itself, but it **cannot** stop a second server acting on the same shared economy.
+Backends differ in how strong a promise they can make, and it is not a yes or no question. Three
+levels, reported by `Guarantee`:
 
-Ask before you rely on it, either up front or from the result:
+| Level | Meaning |
+| --- | --- |
+| `NATIVE` | The backend validated the funds inside storage every server shares. Safe against a cross-server double spend. |
+| `DELEGATED` | The backend reported the outcome, but does not promise the check and the debit were indivisible. Trustworthy for one request, not a cross-server guarantee. |
+| `EMULATED` | This library did the check and the debit itself under a lock. Protects one server against racing itself only. |
+
+Ask up front, or read it off the result:
 
 ```java
-if (!Currencies.VAULT.hasNativeConditionalWithdraw("default")) {
-    getLogger().warning("This currency cannot guarantee atomic purchases across servers.");
+if (!Currencies.VAULT.getWithdrawGuarantee("default").isCrossServerSafe()) {
+    getLogger().warning("This currency cannot guarantee purchases across servers.");
 }
 
-result.isBackendGuaranteed(); // false when the library had to emulate the operation
+result.getGuarantee(); // NATIVE, DELEGATED or EMULATED
 ```
 
-| Currency | Atomic | Notes |
+| Currency | Guarantee | Notes |
 | --- | --- | --- |
-| `VAULT` | yes | As atomic as the underlying economy plugin |
-| `PLAYERPOINTS` | yes | `take` refuses when the balance is too low |
-| `ZESSENTIALS` | yes | `withdraw` reports the outcome |
-| `REDISECONOMY` | yes | Validated in Redis, so it holds across servers |
-| `EXCELLENTECONOMY` | yes | Native async operation with a result |
-| `VOTINGPLUGIN` | yes | `removePoints` reports the outcome |
-| `ITEM`, `ZMENUITEMS` | yes | Player inventory, main thread only |
-| `LEVEL`, `EXPERIENCE` | yes | Player state, main thread only |
-| `COINSENGINE` | no | Its boolean means "currency found", not "could afford" |
-| `ECOBITS` | no | `adjustBalance` returns nothing |
-| `BEASTTOKENS` | no | `removeTokens` returns nothing |
-| `ROYALEECONOMY` | no | `removeBalance` returns nothing |
-| `ELEMENTALTOKENS`, `ELEMENTALGEMS` | no | `removeTokens` / `removeGems` return nothing |
+| `REDISECONOMY` | `NATIVE` | Validated in Redis, so it holds across servers |
+| `EXCELLENTECONOMY` | `NATIVE` | Native async operation with a result |
+| `ITEM`, `ZMENUITEMS` | `NATIVE` | Player inventory, local to this server, main thread only |
+| `LEVEL`, `EXPERIENCE` | `NATIVE` | Player state, local to this server, main thread only |
+| `VAULT` | `DELEGATED` | `withdrawPlayer` reports failure, but Vault delegates to whichever economy plugin is installed and most do a plain read-modify-write |
+| `ZESSENTIALS` | `DELEGATED` | `withdraw` returns a boolean, indivisibility is not promised |
+| `PLAYERPOINTS` | `DELEGATED` | `take` refuses when the balance is too low |
+| `VOTINGPLUGIN` | `DELEGATED` | `removePoints` reports the outcome |
+| `COINSENGINE` | `EMULATED` | Its boolean means "currency found", not "could afford" |
+| `ECOBITS` | `EMULATED` | `adjustBalance` returns nothing |
+| `BEASTTOKENS` | `EMULATED` | `removeTokens` returns nothing |
+| `ROYALEECONOMY` | `EMULATED` | `removeBalance` returns nothing |
+| `ELEMENTALTOKENS`, `ELEMENTALGEMS` | `EMULATED` | `removeTokens` / `removeGems` return nothing |
 
-If you run a network where several servers share one economy database, only the currencies marked
-atomic are safe against cross-server double spends. For the others the fix has to come from the
-economy plugin itself.
+If several servers share one economy database, only `NATIVE` is safe against a cross-server double
+spend. `DELEGATED` is the honest answer for Vault: it does tell you whether the withdrawal worked,
+which is strictly better than guessing, but the economy plugin behind it is usually not atomic. For
+`EMULATED` the fix has to come from the economy plugin itself.
 
 ### Custom Economies
 
@@ -233,10 +241,10 @@ TransactionResult result = CurrencyRegistry.withdrawIfSufficient(
 ```
 
 When you override `withdrawIfSufficient`, build the result with the factory that matches who made
-the decision: `TransactionResult.nativeSuccess(...)` / `nativeInsufficientFunds(...)` when your
-backend checked the funds itself, or `emulatedSuccess(...)` / `emulatedInsufficientFunds(...)` when
-you checked them yourself. `unsupported(...)` and `failed(...)` cover the rest. That is what
-`isBackendGuaranteed()` reports back to the caller.
+the level your backend can actually promise: `TransactionResult.success(amount, balance, guarantee)`
+and `insufficientFunds(amount, balance, guarantee)`, passing `Guarantee.NATIVE`, `DELEGATED` or
+`EMULATED`. `unsupported(...)` and `failed(...)` cover the rest. That is what `getGuarantee()`
+reports back to the caller, so be honest about it.
 
 To look a registered currency up, `CurrencyRegistry.require(name)` throws when there is none and
 `CurrencyRegistry.find(name)` returns null. Use `registerOrReplace(...)` to deliberately swap an
@@ -245,7 +253,7 @@ implementation, for example on a config reload.
 Those three methods are all you have to write. Everything else has a default implementation, so an
 existing provider keeps working unchanged. Two optional overrides are worth knowing about:
 
-- `hasNativeConditionalWithdraw()` and `withdrawIfSufficient(...)`: override both when your backend can
+- `getWithdrawGuarantee()` and `withdrawIfSufficient(...)`: override both when your backend can
   refuse a withdrawal itself. You get a real guarantee instead of the emulated one. Call
   `CurrencyArgumentChecks.findProblem(playerId, amount)` first so your implementation rejects the same bad
   inputs as every other provider.

@@ -2,6 +2,7 @@ package fr.traqueur.currencies.providers;
 
 import fr.traqueur.currencies.CurrencyArgumentChecks;
 import fr.traqueur.currencies.CurrencyProvider;
+import fr.traqueur.currencies.Guarantee;
 import fr.traqueur.currencies.TransactionResult;
 import org.black_ixx.playerpoints.PlayerPoints;
 import org.black_ixx.playerpoints.PlayerPointsAPI;
@@ -39,8 +40,8 @@ public class PlayerPointsProvider implements CurrencyProvider {
     }
 
     @Override
-    public boolean hasNativeConditionalWithdraw() {
-        return true;
+    public Guarantee getWithdrawGuarantee() {
+        return Guarantee.DELEGATED;
     }
 
     @Override
@@ -57,10 +58,10 @@ public class PlayerPointsProvider implements CurrencyProvider {
 
             int points = amount.intValueExact();
             if (this.getAPI().take(playerId, points)) {
-                return TransactionResult.nativeSuccess(amount, BigDecimal.valueOf(this.getAPI().look(playerId)));
+                return TransactionResult.success(amount, BigDecimal.valueOf(this.getAPI().look(playerId)), Guarantee.DELEGATED);
             }
 
-            return TransactionResult.nativeInsufficientFunds(amount, BigDecimal.valueOf(this.getAPI().look(playerId)));
+            return TransactionResult.insufficientFunds(amount, BigDecimal.valueOf(this.getAPI().look(playerId)), Guarantee.DELEGATED);
         } catch (ArithmeticException exception) {
             return TransactionResult.failed(amount, "The amount does not fit in a PlayerPoints integer: " + amount + ".");
         } catch (Exception exception) {

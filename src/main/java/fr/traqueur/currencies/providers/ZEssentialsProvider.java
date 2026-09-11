@@ -5,6 +5,7 @@ import fr.maxlego08.essentials.api.economy.Economy;
 import fr.maxlego08.essentials.api.economy.EconomyManager;
 import fr.traqueur.currencies.CurrencyArgumentChecks;
 import fr.traqueur.currencies.CurrencyProvider;
+import fr.traqueur.currencies.Guarantee;
 import fr.traqueur.currencies.TransactionResult;
 import org.bukkit.Bukkit;
 
@@ -25,13 +26,15 @@ public class ZEssentialsProvider implements CurrencyProvider {
     private void initialize() {
         if (this.economyManager == null || this.economy == null) {
             EssentialsPlugin essentialsPlugin = (EssentialsPlugin) Bukkit.getPluginManager().getPlugin("zEssentials");
-            assert essentialsPlugin != null : "zEssentials plugin not found";
+            if (essentialsPlugin == null) {
+                throw new IllegalStateException("The plugin zEssentials is not installed.");
+            }
             this.economyManager = essentialsPlugin.getEconomyManager();
             Optional<Economy> optional = this.economyManager.getEconomy(this.economyName);
             if (optional.isPresent()) {
                 this.economy = optional.get();
             } else {
-                throw new NullPointerException("ZEssentials economy " + this.economyName + " not found");
+                throw new IllegalStateException("The zEssentials economy " + this.economyName + " was not found.");
             }
         }
     }
@@ -55,8 +58,8 @@ public class ZEssentialsProvider implements CurrencyProvider {
     }
 
     @Override
-    public boolean hasNativeConditionalWithdraw() {
-        return true;
+    public Guarantee getWithdrawGuarantee() {
+        return Guarantee.DELEGATED;
     }
 
     @Override
@@ -69,9 +72,9 @@ public class ZEssentialsProvider implements CurrencyProvider {
         try {
             this.initialize();
             if (this.economyManager.withdraw(playerId, this.economy, amount, reason)) {
-                return TransactionResult.nativeSuccess(amount, this.getBalance(playerId));
+                return TransactionResult.success(amount, this.getBalance(playerId), Guarantee.DELEGATED);
             }
-            return TransactionResult.nativeInsufficientFunds(amount, this.getBalance(playerId));
+            return TransactionResult.insufficientFunds(amount, this.getBalance(playerId), Guarantee.DELEGATED);
         } catch (Exception exception) {
             return TransactionResult.failed(amount, "zEssentials threw while withdrawing: " + exception.getMessage());
         }
