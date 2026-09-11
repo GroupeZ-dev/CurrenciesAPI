@@ -5,7 +5,6 @@ import org.bukkit.Bukkit;
 import java.math.BigDecimal;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Interface used to interact with a currency provider.
@@ -100,10 +99,11 @@ public interface CurrencyProvider {
         if (invalid != null) {
             return invalid;
         }
-
-        ReentrantLock lock = CurrencyLocks.lockFor(this, playerId);
-        if (!CurrencyLocks.tryLock(lock)) {
-            return TransactionResult.failed(amount, "Timed out waiting for the currency lock, nothing was taken.");
+        
+        CurrencyLocks.Handle handle = CurrencyLocks.tryAcquire(this, playerId);
+        if (handle == null) {
+            return TransactionResult.failed(amount,
+                    "Timed out waiting for another operation on the same balance, nothing was taken.");
         }
 
         try {
@@ -121,7 +121,7 @@ public interface CurrencyProvider {
         } catch (Exception exception) {
             return TransactionResult.failed(amount, "The backend threw while withdrawing: " + exception.getMessage());
         } finally {
-            lock.unlock();
+            handle.release();
         }
     }
 
