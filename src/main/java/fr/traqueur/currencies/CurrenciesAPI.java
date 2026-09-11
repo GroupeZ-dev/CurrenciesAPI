@@ -20,7 +20,7 @@ public final class CurrenciesAPI {
             throw new IllegalArgumentException("The plugin instance cannot be null.");
         }
         if (plugin != null) {
-            throw new IllegalStateException("The plugin instance has already been set by " + plugin.getName() + ".");
+            return;
         }
         plugin = owningPlugin;
     }
